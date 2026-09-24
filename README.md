@@ -1,15 +1,15 @@
 # Smart Transit App
 
 A React Native (Expo) app for planning and tracking public transport trips
-in Addis Ababa — across Bus, Taxi, and Train.
+in Addis Ababa, across Bus, Taxi, and Train.
 
 ## Features
 
 - **Trip planning** across three transport modes, each with its own
   stations, timing, cost, and step-by-step journey details
-- **Live trip flow** — from route selection through walking directions,
+- **Live trip flow**: from route selection through walking directions,
   boarding, live tracking, and arrival
-- **Live Map** — tap any nearby vehicle to see its status and track it
+- **Live Map**: tap any nearby vehicle to see its status and track it
 - **Saved routes & trip history**
 - **Account, notifications, and settings**
 
