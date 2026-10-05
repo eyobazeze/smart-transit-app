@@ -27,7 +27,7 @@ export default function HomeScreen({ navigation }) {
               <Ionicons name="person" size={26} color={colors.white} />
             </TouchableOpacity>
             <View>
-              <Text style={styles.greeting}>Hi, there!</Text>
+              <Text style={styles.greeting}>Hello, there!</Text>
               <View style={styles.locationRow}>
                 <Ionicons name="location-sharp" size={13} color={colors.grey600} />
                 <Text style={styles.locationText}>Addis Ababa, Ethiopia</Text>
@@ -61,7 +61,7 @@ export default function HomeScreen({ navigation }) {
               </View>
               <View style={styles.tripInputs}>
                 <View style={styles.tripInputRow}>
-                  <Text style={styles.tripInputTextActive}>Your location</Text>
+                  <Text style={styles.tripInputTextActive}>Your current location</Text>
                 </View>
                 <View style={styles.tripInputRowLast}>
                   <Text style={styles.tripInputText}>Where are you going?</Text>
