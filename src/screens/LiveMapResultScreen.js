@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import LiveRouteMap from '../components/LiveRouteMap';
 import { colors, typography } from '../theme/colors';
@@ -10,7 +11,7 @@ const BUSES = [
   { id: 'bus-3', progress: 0.15, currentLocation: 'Bole', status: 'Arrive in 15 min' },
 ];
 
-export default function LiveMapResultScreen({ navigation }) {
+export default function LiveMapResultScreen({ navigation, route }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.topBar}>
@@ -28,7 +29,7 @@ export default function LiveMapResultScreen({ navigation }) {
 
       <View style={styles.bottomBar}>
         <View style={styles.grabber} />
-        <Text style={styles.routeTitle}>Meskel Square → Shola Market</Text>
+        <Text style={styles.routeTitle}>{route?.params?.origin && route?.params?.destination ? `${route.params.origin.id === 'current' ? 'Your location' : route.params.origin.name} → ${route.params.destination.name}` : 'Meskel Square → Shola Market'}</Text>
         <View style={styles.routeStatsRow}>
           <Text style={styles.routeStat}>3 buses</Text>
           <View style={styles.dot} />

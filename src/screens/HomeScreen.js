@@ -1,15 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { colors, typography } from '../theme/colors';
+import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
+import { CURRENT_LOCATION, PLACES } from '../data/places';
 
 const RECENT_TRIPS = [
   { id: '1', route: 'Bole → Piassa', distance: '7.2 km', time: '18 mins', cost: '35 ETB', icon: 'car', mode: 'Taxi' },
@@ -18,9 +20,21 @@ const RECENT_TRIPS = [
 ];
 
 export default function HomeScreen({ navigation }) {
+  const [plan, setPlan] = useState({ origin: CURRENT_LOCATION, destination: null });
+  const [error, setError] = useState(null);
+  const go = () => {
+    const err = validatePlan(plan);
+    setError(err);
+    if (!err) navigation.navigate('TripResult', { origin: plan.origin, destination: plan.destination });
+  };
+  const recentPlan = (r) => {
+    const find = (n) => PLACES.find((p) => p.name.toLowerCase() === n.toLowerCase().trim());
+    const [a, b] = r.route.split('→');
+    return { origin: find(a), destination: find(b) };
+  };
   return (
     <SafeAreaView style={styles.safe}>
-      <ScrollView>
+      <ScrollView keyboardShouldPersistTaps="handled">
         <View style={styles.userInfo}>
           <View style={styles.greetingRow}>
             <TouchableOpacity style={styles.avatar} onPress={() => navigation.navigate('Profile')}>
@@ -53,24 +67,10 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.planSubtitle}>Track public transport in real time.</Text>
             </View>
 
-            <View style={styles.tripPlanner}>
-              <View style={styles.tripPlannerIcons}>
-                <View style={styles.dotOutline} />
-                <View style={styles.dottedLine} />
-                <Ionicons name="location-sharp" size={16} color={colors.primary800} />
-              </View>
-              <View style={styles.tripInputs}>
-                <View style={styles.tripInputRow}>
-                  <Text style={styles.tripInputTextActive}>Your current location</Text>
-                </View>
-                <View style={styles.tripInputRowLast}>
-                  <Text style={styles.tripInputText}>Where are you going?</Text>
-                </View>
-              </View>
-              <Feather name="repeat" size={18} color={colors.grey600} />
-            </View>
+            <LocationPlanner value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
+            {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-            <TouchableOpacity style={styles.planButton} onPress={() => navigation.navigate('TripResult')}>
+            <TouchableOpacity style={styles.planButton} onPress={go}>
               <Text style={styles.planButtonText}>Plan My Trip</Text>
             </TouchableOpacity>
           </View>
@@ -81,7 +81,7 @@ export default function HomeScreen({ navigation }) {
               {RECENT_TRIPS.map((trip, index) => (
                 <TouchableOpacity
                   key={trip.id}
-                  onPress={() => navigation.navigate('TripResult', { mode: trip.mode })}
+                  onPress={() => navigation.navigate('TripResult', { mode: trip.mode, ...recentPlan(trip) })}
                   style={[
                     styles.recentItem,
                     index !== RECENT_TRIPS.length - 1 && styles.recentItemBorder,
@@ -186,6 +186,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 10 },
     elevation: 3,
   },
+  errorText: { ...typography.b3, color: colors.red500, marginTop: -8 },
   planButtonText: { ...typography.s2, color: colors.white },
   recentSection: { gap: 10 },
   recentTitle: { ...typography.b2, color: colors.black },

@@ -5,9 +5,9 @@ import {
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  SafeAreaView,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import InputField from '../components/InputField';
 import { colors, typography } from '../theme/colors';
@@ -60,7 +60,7 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.forgotText}>Forgot password?</Text>
           </View>
 
-          <TouchableOpacity style={styles.signInButton} onPress={() => navigation.replace('Home')}>
+          <TouchableOpacity style={styles.signInButton} onPress={() => navigation.replace('Main')}>
             <Text style={styles.signInText}>Sign In</Text>
           </TouchableOpacity>
         </View>

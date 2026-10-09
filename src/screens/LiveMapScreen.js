@@ -1,14 +1,25 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../components/RouteMap';
 import { colors, typography } from '../theme/colors';
+import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
+import { CURRENT_LOCATION } from '../data/places';
 
 export default function LiveMapScreen({ navigation }) {
   const [transportType, setTransportType] = useState('Bus');
+  const [plan, setPlan] = useState({ origin: CURRENT_LOCATION, destination: null });
+  const [error, setError] = useState(null);
+  const find = () => {
+    const err = validatePlan(plan);
+    setError(err);
+    if (!err) navigation.navigate('LiveMapResult', { origin: plan.origin, destination: plan.destination });
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
       <View style={styles.topBar}>
         <View style={styles.titleRow}>
           <Ionicons name="navigate-circle" size={22} color={colors.primary800} />
@@ -24,22 +35,8 @@ export default function LiveMapScreen({ navigation }) {
       <View style={styles.sheet}>
         <View style={styles.grabber} />
 
-        <View style={styles.plannerCard}>
-          <View style={styles.plannerIcons}>
-            <View style={styles.dotOutline} />
-            <View style={styles.dottedLine} />
-            <Ionicons name="location-sharp" size={16} color={colors.primary800} />
-          </View>
-          <View style={styles.plannerInputs}>
-            <View style={styles.inputRow}>
-              <Text style={styles.inputTextActive}>Your location</Text>
-            </View>
-            <View style={styles.inputRowLast}>
-              <Text style={styles.inputText}>Where are you going?</Text>
-            </View>
-          </View>
-          <Ionicons name="swap-vertical" size={18} color={colors.grey600} />
-        </View>
+        <LocationPlanner value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity style={styles.transportCard}>
           <View style={styles.transportLeft}>
@@ -51,12 +48,13 @@ export default function LiveMapScreen({ navigation }) {
 
         <TouchableOpacity
           style={styles.findButton}
-          onPress={() => navigation.navigate('LiveMapResult')}
+          onPress={find}
         >
           <Ionicons name="search" size={18} color={colors.white} />
           <Text style={styles.findButtonText}>Find Transport to track</Text>
         </TouchableOpacity>
       </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }
@@ -103,6 +101,7 @@ const styles = StyleSheet.create({
   inputRowLast: { paddingVertical: 16 },
   inputTextActive: { ...typography.b1, color: colors.primary800 },
   inputText: { ...typography.b1, color: colors.black },
+  errorText: { ...typography.b3, color: colors.red500, marginTop: -10 },
   transportCard: {
     backgroundColor: colors.white,
     borderRadius: 10,

@@ -1,5 +1,6 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import HomeScreen from '../screens/HomeScreen';
 import LiveMapScreen from '../screens/LiveMapScreen';
@@ -17,14 +18,26 @@ const ICONS = {
 };
 
 export default function MainTabs() {
+  // On Android (edge-to-edge) the system gesture/nav bar overlaps the app,
+  // so the tab bar must add the bottom inset itself instead of using a fixed height.
+  const insets = useSafeAreaInsets();
+  const bottom = Math.max(insets.bottom, 8);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.primary800,
         tabBarInactiveTintColor: colors.grey400,
-        tabBarStyle: { height: 75, paddingTop: 8 },
-        tabBarIcon: ({ color, size }) => (
+        tabBarLabelStyle: { fontFamily: 'Inter_500Medium', fontSize: 11 },
+        tabBarStyle: {
+          height: 56 + bottom,
+          paddingTop: 8,
+          paddingBottom: bottom,
+          borderTopColor: colors.grey200,
+          backgroundColor: colors.white,
+        },
+        tabBarIcon: ({ color }) => (
           <Ionicons name={ICONS[route.name]} size={22} color={color} />
         ),
       })}

@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
 import TripBottomCard from '../../components/TripBottomCard';
@@ -35,7 +36,7 @@ export default function TripStartScreen({ route, navigation }) {
         duration={trip.duration}
         distance={trip.distance}
         time={trip.leaveTime}
-        onCancel={() => navigation.navigate('Home')}
+        onCancel={() => navigation.navigate('Main', { screen: 'Home' })}
         onEnd={() => navigation.navigate('TripStation', { mode })}
       />
     </SafeAreaView>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, SafeAreaView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
 import { colors, typography } from '../../theme/colors';
@@ -24,6 +25,15 @@ export default function TripResultScreen({ route, navigation }) {
         <Text style={styles.topBarTitle}>Route Planner</Text>
         <Ionicons name="notifications-outline" size={20} color={colors.black} />
       </View>
+
+      {route.params?.origin && route.params?.destination ? (
+        <View style={styles.routeChip}>
+          <Ionicons name="navigate-circle" size={18} color={colors.primary800} />
+          <Text style={styles.routeChipText} numberOfLines={1}>
+            {route.params.origin.id === 'current' ? 'Your location' : route.params.origin.name} → {route.params.destination.name}
+          </Text>
+        </View>
+      ) : null}
 
       <RouteMap height={520} />
 
@@ -72,6 +82,8 @@ export default function TripResultScreen({ route, navigation }) {
 }
 
 const styles = StyleSheet.create({
+  routeChip: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 25, paddingBottom: 12, backgroundColor: colors.white },
+  routeChipText: { ...typography.b2, color: colors.black, flex: 1 },
   safe: { flex: 1, backgroundColor: colors.white },
   topBar: {
     flexDirection: 'row',

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, SafeAreaView, Switch } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography } from '../theme/colors';
 
@@ -64,7 +65,7 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Other</Text>
-          <Row icon="settings-outline" label="Settings" onPress={() => navigation.navigate('Home', { screen: 'Settings' })} />
+          <Row icon="settings-outline" label="Settings" onPress={() => navigation.navigate('Main', { screen: 'Settings' })} />
           <Row icon="help-circle-outline" label="Help Center" onPress={() => {}} />
           <Row icon="log-out-outline" label="Logout" onPress={() => navigation.replace('Login')} />
         </View>
