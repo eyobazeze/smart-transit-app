@@ -14,7 +14,7 @@ const MODES = [
 
 export default function TripResultScreen({ route, navigation }) {
   const [mode, setMode] = useState(route.params?.mode || 'Bus');
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -59,9 +59,9 @@ export default function TripResultScreen({ route, navigation }) {
 
         <TouchableOpacity
           style={styles.detailsRow}
-          onPress={() => navigation.navigate('TripDetail', { mode })}
+          onPress={() => navigation.navigate('TripDetail', { mode, origin: route.params?.origin, destination: route.params?.destination })}
         >
-          <View>
+          <View style={{ flex: 1, paddingRight: 12 }}>
             <Text style={styles.stationName}>{trip.station}</Text>
             <View style={styles.statsRow}>
               <Text style={styles.statText}>{trip.distance}</Text>

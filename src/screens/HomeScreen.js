@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -22,10 +22,12 @@ const RECENT_TRIPS = [
 export default function HomeScreen({ navigation }) {
   const [plan, setPlan] = useState({ origin: CURRENT_LOCATION, destination: null });
   const [error, setError] = useState(null);
+  const planner = useRef(null);
   const go = () => {
-    const err = validatePlan(plan);
+    const resolved = planner.current ? planner.current.resolve() : plan;
+    const err = validatePlan(resolved);
     setError(err);
-    if (!err) navigation.navigate('TripResult', { origin: plan.origin, destination: plan.destination });
+    if (!err) navigation.navigate('TripResult', { origin: resolved.origin, destination: resolved.destination });
   };
   const recentPlan = (r) => {
     const find = (n) => PLACES.find((p) => p.name.toLowerCase() === n.toLowerCase().trim());
@@ -67,7 +69,7 @@ export default function HomeScreen({ navigation }) {
               <Text style={styles.planSubtitle}>Track public transport in real time.</Text>
             </View>
 
-            <LocationPlanner value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
+            <LocationPlanner ref={planner} value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
             <TouchableOpacity style={styles.planButton} onPress={go}>

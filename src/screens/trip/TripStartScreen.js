@@ -9,7 +9,7 @@ import { getTrip } from '../../data/tripData';
 
 export default function TripStartScreen({ route, navigation }) {
   const mode = route.params?.mode || 'Bus';
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -37,7 +37,7 @@ export default function TripStartScreen({ route, navigation }) {
         distance={trip.distance}
         time={trip.leaveTime}
         onCancel={() => navigation.navigate('Main', { screen: 'Home' })}
-        onEnd={() => navigation.navigate('TripStation', { mode })}
+        onEnd={() => navigation.navigate('TripStation', { mode, origin: route.params?.origin, destination: route.params?.destination })}
       />
     </SafeAreaView>
   );

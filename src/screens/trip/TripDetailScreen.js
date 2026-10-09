@@ -15,7 +15,7 @@ const MODES = [
 export default function TripDetailScreen({ route, navigation }) {
   const [mode, setMode] = useState(route.params?.mode || 'Bus');
   const [activeOption, setActiveOption] = useState('Leave 12:00 PM');
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -52,7 +52,7 @@ export default function TripDetailScreen({ route, navigation }) {
         </View>
 
         <View style={styles.detailsRow}>
-          <View>
+          <View style={{ flex: 1, paddingRight: 12 }}>
             <Text style={styles.stationName}>{trip.station}</Text>
             <View style={styles.statsRow}>
               <Text style={styles.statText}>{trip.distance}</Text>
@@ -99,7 +99,7 @@ export default function TripDetailScreen({ route, navigation }) {
 
         <TouchableOpacity
           style={styles.startButton}
-          onPress={() => navigation.navigate('TripStart', { mode })}
+          onPress={() => navigation.navigate('TripStart', { mode, origin: route.params?.origin, destination: route.params?.destination })}
         >
           <Text style={styles.startButtonText}>Start Trip</Text>
         </TouchableOpacity>

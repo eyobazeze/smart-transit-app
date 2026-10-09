@@ -64,6 +64,57 @@ export const tripsByMode = {
   Train: trainTrip,
 };
 
-export function getTrip(mode) {
-  return tripsByMode[mode] || busTrip;
+const SPEED_KMH = { Bus: 16, Taxi: 28, Train: 32 };
+const PER_KM = { Bus: 2, Taxi: 22, Train: 1.2 };
+const MIN_FARE = { Bus: 5, Taxi: 60, Train: 3 };
+
+function km(a, b) {
+  const R = 6371, rad = (d) => (d * Math.PI) / 180;
+  const dLat = rad(b.lat - a.lat), dLng = rad(b.lng - a.lng);
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(rad(a.lat)) * Math.cos(rad(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h)) * 1.35; // 1.35 = rough road-winding factor
+}
+function clock(base, addMin) {
+  const d = new Date(base.getTime() + addMin * 60000);
+  let h = d.getHours(); const m = d.getMinutes(); const ap = h >= 12 ? 'PM' : 'AM';
+  h = h % 12 || 12;
+  return `${h}:${String(m).padStart(2, '0')} ${ap}`;
+}
+
+export function getTrip(mode, origin, destination) {
+  const base = tripsByMode[mode] || busTrip;
+  if (!origin || !destination) return base;
+  const m = base.mode;
+  const dist = Math.max(0.5, km(origin, destination));
+  const walk = m === 'Taxi' ? 3 : 6;
+  const wait = m === 'Taxi' ? 2 : m === 'Train' ? 5 : 7;
+  const ride = Math.max(4, Math.round((dist / SPEED_KMH[m]) * 60));
+  const total = walk + wait + ride;
+  const cost = Math.round(Math.max(MIN_FARE[m], dist * PER_KM[m]) / (m === 'Taxi' ? 5 : 1)) * (m === 'Taxi' ? 5 : 1);
+  const now = new Date();
+  const from = origin.id === 'current' ? 'your location' : origin.name;
+  const startName = origin.id === 'current' ? 'Your location' : origin.name;
+  const station = m === 'Taxi' ? `${startName} pickup point` : m === 'Train' ? `${startName} Light Rail Station` : `${startName} Bus Station`;
+  const endStation = m === 'Taxi' ? destination.name : m === 'Train' ? `${destination.name} Station` : `${destination.name} Bus Stop`;
+  const t0 = clock(now, 0), t1 = clock(now, walk), t2 = clock(now, walk + wait), t3 = clock(now, total);
+  const steps = m === 'Taxi'
+    ? [
+        { title: `Requesting a taxi near ${from}`, time: t0 },
+        { title: 'Driver Dawit assigned (Toyota Vitz, 3 min away)', time: clock(now, 2) },
+        { title: `Picked up at ${station}`, time: t2 },
+        { title: `Arrive at ${destination.name}`, time: t3 },
+      ]
+    : [
+        { title: `Walk to ${station}`, time: t0 },
+        { title: `Waiting for the ${m.toLowerCase()} (about ${wait} min)`, time: t1 },
+        { title: `Board ${m.toLowerCase()}: ${startName} → ${destination.name}`, time: t2 },
+        { title: `Arrive at ${endStation}`, time: t3 },
+      ];
+  return {
+    ...base,
+    origin: startName, destination: destination.name, station, endStation,
+    distance: `${dist.toFixed(1)} km`, duration: `${total} mins`, cost: `${cost} ETB`,
+    leaveTime: t0, arriveTime: t3, steps,
+    tripOptions: base.tripOptions.map((o) => (o.startsWith('Leave') ? `Leave ${t0}` : o)),
+  };
 }

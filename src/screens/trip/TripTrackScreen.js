@@ -9,7 +9,7 @@ import { getTrip } from '../../data/tripData';
 
 export default function TripTrackScreen({ route, navigation }) {
   const mode = route.params?.mode || 'Bus';
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
   const [progress, setProgress] = useState(0.15);
 
   useEffect(() => {
@@ -60,7 +60,7 @@ export default function TripTrackScreen({ route, navigation }) {
         distance={trip.distance}
         time={trip.steps[2]?.time || trip.leaveTime}
         onCancel={() => navigation.navigate('Main', { screen: 'Home' })}
-        onEnd={() => navigation.navigate('TripEnd', { mode })}
+        onEnd={() => navigation.navigate('TripEnd', { mode, origin: route.params?.origin, destination: route.params?.destination })}
       />
     </SafeAreaView>
   );

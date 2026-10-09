@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { colors, typography } from '../theme/colors';
@@ -13,13 +13,32 @@ const KIND_ICON = {
  * Controlled origin/destination editor with live suggestions.
  * value: { origin: Place|null, destination: Place|null }
  */
-export default function LocationPlanner({ value, onChange, style }) {
+const LocationPlanner = forwardRef(function LocationPlanner({ value, onChange, style }, ref) {
   const [active, setActive] = useState(null); // 'origin' | 'destination' | null
   const [text, setText] = useState({
     origin: value.origin ? value.origin.name : '',
     destination: value.destination ? value.destination.name : '',
   });
   const destRef = useRef(null);
+
+  // Turn typed-but-not-picked text into the best matching place.
+  const resolveOne = (field, t, current) => {
+    if (current || !t.trim()) return current;
+    return findExact(t) || searchPlaces(t)[0] || null;
+  };
+  useImperativeHandle(ref, () => ({
+    // Returns the plan with any typed text resolved, and updates the fields.
+    resolve() {
+      const next = {
+        origin: resolveOne('origin', text.origin, value.origin),
+        destination: resolveOne('destination', text.destination, value.destination),
+      };
+      setText({ origin: next.origin ? next.origin.name : text.origin, destination: next.destination ? next.destination.name : text.destination });
+      setActive(null);
+      onChange(next);
+      return next;
+    },
+  }));
 
   const other = active === 'origin' ? value.destination : value.origin;
   const suggestions = active
@@ -59,11 +78,12 @@ export default function LocationPlanner({ value, onChange, style }) {
           value={text[field]}
           onChangeText={(t) => onType(field, t)}
           onFocus={() => setActive(field)}
-          onBlur={() => setTimeout(() => setActive((a) => (a === field ? null : a)), 150)}
+          onBlur={() => setTimeout(() => setActive((a) => (a === field ? null : a)), 200)}
           placeholder={placeholder}
           placeholderTextColor={colors.grey400}
           style={[styles.input, field === 'origin' && value.origin?.id === 'current' && styles.inputCurrent]}
           returnKeyType={field === 'origin' ? 'next' : 'done'}
+          onSubmitEditing={() => { const r = resolveOne(field, text[field], value[field]); if (r) pick(field, r); }}
           autoCorrect={false}
           selectTextOnFocus
         />
@@ -119,13 +139,16 @@ export default function LocationPlanner({ value, onChange, style }) {
             </TouchableOpacity>
           ))}
           {text[active] && !suggestions.length ? (
-            <Text style={styles.empty}>No matching place in Addis Ababa</Text>
+            <Text style={styles.empty}>No matching place found. Try another name</Text>
           ) : null}
         </View>
       ) : null}
     </View>
   );
-}
+});
+
+LocationPlanner.displayName = 'LocationPlanner';
+export default LocationPlanner;
 
 /** Returns an error string or null. */
 export function validatePlan({ origin, destination }) {

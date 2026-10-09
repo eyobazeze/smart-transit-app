@@ -9,7 +9,7 @@ import { getTrip } from '../../data/tripData';
 
 export default function TripEndScreen({ route, navigation }) {
   const mode = route.params?.mode || 'Bus';
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
 
   return (
     <SafeAreaView style={styles.safe}>

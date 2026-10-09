@@ -41,14 +41,23 @@ export function searchPlaces(query, exclude = []) {
   const q = norm(query);
   const pool = PLACES.filter((p) => !exclude.includes(p.id));
   if (!q) return RECENT_PLACE_IDS.map((id) => pool.find((p) => p.id === id)).filter(Boolean);
-  const starts = [];
-  const contains = [];
+  const tokens = q.split(/\s+/).filter(Boolean);
+  const scored = [];
   pool.forEach((p) => {
-    const n = norm(p.name);
-    if (n.startsWith(q)) starts.push(p);
-    else if (n.includes(q) || norm(p.area).includes(q)) contains.push(p);
+    const name = norm(p.name);
+    const words = name.split(/[\s-]+/);
+    const hay = name + ' ' + norm(p.area);
+    // every typed word must start a word in the name/area (or appear inside it)
+    const ok = tokens.every((t) => words.some((w) => w.startsWith(t)) || hay.includes(t));
+    if (!ok) return;
+    let score = 0;
+    if (name.startsWith(q)) score += 100;
+    else if (name.includes(q)) score += 60;
+    score += tokens.filter((t) => words.some((w) => w.startsWith(t))).length * 10;
+    score -= name.length / 100;
+    scored.push({ p, score });
   });
-  return [...starts, ...contains].slice(0, 6);
+  return scored.sort((x, y) => y.score - x.score).slice(0, 6).map((x) => x.p);
 }
 
 export function findExact(text) {

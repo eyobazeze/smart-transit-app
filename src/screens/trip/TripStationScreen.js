@@ -9,7 +9,7 @@ import { getTrip } from '../../data/tripData';
 
 export default function TripStationScreen({ route, navigation }) {
   const mode = route.params?.mode || 'Bus';
-  const trip = getTrip(mode);
+  const trip = getTrip(mode, route.params?.origin, route.params?.destination);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -25,11 +25,11 @@ export default function TripStationScreen({ route, navigation }) {
         <View style={styles.promptCard}>
           <Text style={styles.promptText}>Your vehicle arrives. Are you boarding this vehicle now?</Text>
           <View style={styles.promptOptions}>
-            <TouchableOpacity style={styles.promptOption} onPress={() => navigation.navigate('TripTrack', { mode })}>
+            <TouchableOpacity style={styles.promptOption} onPress={() => navigation.navigate('TripTrack', { mode, origin: route.params?.origin, destination: route.params?.destination })}>
               <Ionicons name="checkmark-circle-outline" size={16} color={colors.black} />
               <Text style={styles.promptOptionText}>Yes, I'm onboard</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.promptOption} onPress={() => navigation.navigate('TripTrack', { mode })}>
+            <TouchableOpacity style={styles.promptOption} onPress={() => navigation.navigate('TripTrack', { mode, origin: route.params?.origin, destination: route.params?.destination })}>
               <Ionicons name="eye-outline" size={16} color={colors.black} />
               <Text style={styles.promptOptionText}>No, just tracking</Text>
             </TouchableOpacity>
@@ -51,7 +51,7 @@ export default function TripStationScreen({ route, navigation }) {
         distance={trip.distance}
         time={trip.steps[1]?.time || trip.leaveTime}
         onCancel={() => navigation.navigate('Main', { screen: 'Home' })}
-        onEnd={() => navigation.navigate('TripTrack', { mode })}
+        onEnd={() => navigation.navigate('TripTrack', { mode, origin: route.params?.origin, destination: route.params?.destination })}
       />
     </SafeAreaView>
   );

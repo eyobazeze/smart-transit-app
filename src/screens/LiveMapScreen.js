@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -11,10 +11,12 @@ export default function LiveMapScreen({ navigation }) {
   const [transportType, setTransportType] = useState('Bus');
   const [plan, setPlan] = useState({ origin: CURRENT_LOCATION, destination: null });
   const [error, setError] = useState(null);
+  const planner = useRef(null);
   const find = () => {
-    const err = validatePlan(plan);
+    const resolved = planner.current ? planner.current.resolve() : plan;
+    const err = validatePlan(resolved);
     setError(err);
-    if (!err) navigation.navigate('LiveMapResult', { origin: plan.origin, destination: plan.destination });
+    if (!err) navigation.navigate('LiveMapResult', { origin: resolved.origin, destination: resolved.destination });
   };
 
   return (
@@ -35,7 +37,7 @@ export default function LiveMapScreen({ navigation }) {
       <View style={styles.sheet}>
         <View style={styles.grabber} />
 
-        <LocationPlanner value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
+        <LocationPlanner ref={planner} value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
         {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
         <TouchableOpacity style={styles.transportCard}>
