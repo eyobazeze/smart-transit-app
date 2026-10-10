@@ -35,7 +35,7 @@ export default function TripResultScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      <RouteMap height={520} />
+      <RouteMap />
 
       <View style={styles.sheet}>
         <View style={styles.grabber} />

@@ -94,7 +94,8 @@ export function getTrip(mode, origin, destination) {
   const now = new Date();
   const from = origin.id === 'current' ? 'your location' : origin.name;
   const startName = origin.id === 'current' ? 'Your location' : origin.name;
-  const station = m === 'Taxi' ? `${startName} pickup point` : m === 'Train' ? `${startName} Light Rail Station` : `${startName} Bus Station`;
+  const cur = origin.id === 'current';
+  const station = m === 'Taxi' ? (cur ? 'Pickup at your location' : `${startName} pickup point`) : m === 'Train' ? (cur ? 'Nearest light rail station' : `${startName} Light Rail Station`) : (cur ? 'Nearest bus station' : `${startName} Bus Station`);
   const endStation = m === 'Taxi' ? destination.name : m === 'Train' ? `${destination.name} Station` : `${destination.name} Bus Stop`;
   const t0 = clock(now, 0), t1 = clock(now, walk), t2 = clock(now, walk + wait), t3 = clock(now, total);
   const steps = m === 'Taxi'

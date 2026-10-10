@@ -31,7 +31,7 @@ export default function LiveMapScreen({ navigation }) {
       </View>
 
       <View style={styles.mapWrap}>
-        <RouteMap height={500} />
+        <RouteMap />
       </View>
 
       <View style={styles.sheet}>

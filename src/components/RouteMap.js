@@ -7,10 +7,10 @@ import { colors, typography } from '../theme/colors';
 // A free, API-key-free stand-in for a real basemap: draws a stylized street
 // grid + route line. Swap for react-native-maps + MapView later if/when
 // you're ready to wire a Google Maps API key.
-export default function RouteMap({ busProgress, height = 500 }) {
+export default function RouteMap({ busProgress, height }) {
   return (
-    <View style={[styles.container, { height }]}>
-      <Svg width="100%" height="100%" viewBox="0 0 428 600" style={StyleSheet.absoluteFill}>
+    <View style={[styles.container, height ? { height } : { flex: 1 }]}>
+      <Svg width="100%" height="100%" viewBox="0 0 428 600" preserveAspectRatio="xMidYMid slice" style={StyleSheet.absoluteFill}>
         {/* stylized street grid */}
         {[80, 170, 260, 350].map((y) => (
           <Path key={`h${y}`} d={`M0,${y} L428,${y}`} stroke={colors.grey200} strokeWidth={2} />
