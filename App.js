@@ -18,10 +18,7 @@ import SignUpScreen from './src/screens/SignUpScreen';
 import MainTabs from './src/navigation/MainTabs';
 import TripResultScreen from './src/screens/trip/TripResultScreen';
 import TripDetailScreen from './src/screens/trip/TripDetailScreen';
-import TripStartScreen from './src/screens/trip/TripStartScreen';
-import TripStationScreen from './src/screens/trip/TripStationScreen';
-import TripTrackScreen from './src/screens/trip/TripTrackScreen';
-import TripEndScreen from './src/screens/trip/TripEndScreen';
+import TripLiveScreen from './src/screens/trip/TripLiveScreen';
 import LiveMapResultScreen from './src/screens/LiveMapResultScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
@@ -69,10 +66,7 @@ export default function App() {
             <Stack.Screen name="Main" component={MainTabs} />
             <Stack.Screen name="TripResult" component={TripResultScreen} />
             <Stack.Screen name="TripDetail" component={TripDetailScreen} />
-            <Stack.Screen name="TripStart" component={TripStartScreen} />
-            <Stack.Screen name="TripStation" component={TripStationScreen} />
-            <Stack.Screen name="TripTrack" component={TripTrackScreen} />
-            <Stack.Screen name="TripEnd" component={TripEndScreen} />
+            <Stack.Screen name="TripLive" component={TripLiveScreen} options={{ gestureEnabled: false }} />
             <Stack.Screen name="LiveMapResult" component={LiveMapResultScreen} />
             <Stack.Screen name="Notification" component={NotificationScreen} />
             <Stack.Screen name="Profile" component={ProfileScreen} />
