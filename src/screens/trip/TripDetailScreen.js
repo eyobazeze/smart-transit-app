@@ -99,7 +99,7 @@ export default function TripDetailScreen({ route, navigation }) {
 
         <TouchableOpacity
           style={styles.startButton}
-          onPress={() => navigation.navigate('TripStart', { mode, origin: route.params?.origin, destination: route.params?.destination })}
+          onPress={() => navigation.navigate('TripLive', { mode, origin: route.params?.origin, destination: route.params?.destination })}
         >
           <Text style={styles.startButtonText}>Start Trip</Text>
         </TouchableOpacity>

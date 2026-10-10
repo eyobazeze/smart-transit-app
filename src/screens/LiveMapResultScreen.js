@@ -24,7 +24,7 @@ export default function LiveMapResultScreen({ navigation, route }) {
 
       <LiveRouteMap
         buses={BUSES}
-        onTrack={() => navigation.navigate('TripTrack', { mode: 'Bus' })}
+        onTrack={() => navigation.navigate('TripLive', { mode: 'Bus', origin: route?.params?.origin, destination: route?.params?.destination })}
       />
 
       <View style={styles.bottomBar}>

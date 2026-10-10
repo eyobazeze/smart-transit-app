@@ -83,7 +83,11 @@ function clock(base, addMin) {
 
 export function getTrip(mode, origin, destination) {
   const base = tripsByMode[mode] || busTrip;
-  if (!origin || !destination) return base;
+  if (!origin || !destination) {
+    const total = parseInt(base.duration, 10) || 20;
+    const walk = base.mode === 'Taxi' ? 3 : 6, wait = base.mode === 'Taxi' ? 2 : 6;
+    return { ...base, parts: { walk, wait, ride: Math.max(4, total - walk - wait) } };
+  }
   const m = base.mode;
   const dist = Math.max(0.5, km(origin, destination));
   const walk = m === 'Taxi' ? 3 : 6;
@@ -116,6 +120,7 @@ export function getTrip(mode, origin, destination) {
     origin: startName, destination: destination.name, station, endStation,
     distance: `${dist.toFixed(1)} km`, duration: `${total} mins`, cost: `${cost} ETB`,
     leaveTime: t0, arriveTime: t3, steps,
+    parts: { walk, wait, ride },
     tripOptions: base.tripOptions.map((o) => (o.startsWith('Leave') ? `Leave ${t0}` : o)),
   };
 }
