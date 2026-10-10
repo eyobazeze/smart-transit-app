@@ -1,10 +1,11 @@
 import { LEAFLET_JS, LEAFLET_CSS } from './leafletAssets';
 
 // ---- Map provider settings (all free, no API key) -------------------------------------------
-// Basemap tiles: CARTO "light" (built on OpenStreetMap data). Needs the attribution below.
-// For heavy/production traffic switch to your own tile provider (e.g. MapTiler/Stadia free tiers).
-export const TILE_URL = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
-export const TILE_ATTRIBUTION = '&copy; OpenStreetMap contributors &copy; CARTO';
+// Basemap tiles: the standard OpenStreetMap server. Free and needs no key, but it is meant for
+// light/demo use (see https://operations.osmfoundation.org/policies/tiles/). The attribution is required.
+// For heavier traffic, swap TILE_URL for a hosted provider's free tier (MapTiler, Stadia, Thunderforest...).
+export const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
+export const TILE_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 // Road routing: public OSRM demo server (free, no key, best-effort). Falls back to a straight line.
 export const ROUTING_URL = 'https://router.project-osrm.org/route/v1/driving';
 // ----------------------------------------------------------------------------------------------
@@ -25,7 +26,7 @@ const SCRIPT = `
   var map = L.map('map', { zoomControl: false, attributionControl: true, zoomSnap: 0.25, tap: true })
     .setView([9.0108, 38.7613], 12);
   map.attributionControl.setPrefix(false);
-  L.tileLayer(TILE_URL, { maxZoom: 19, subdomains: 'abcd', attribution: ATTR }).addTo(map);
+  L.tileLayer(TILE_URL, { maxZoom: 19, attribution: ATTR }).addTo(map);
 
   var routeLayer = L.layerGroup().addTo(map);
   var busLayer = L.layerGroup().addTo(map);

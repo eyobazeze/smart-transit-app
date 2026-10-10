@@ -60,7 +60,7 @@ export default function RealMap({
     <View style={[styles.container, height ? { height } : { flex: 1 }]}>
       <WebView
         ref={ref}
-        source={{ html: MAP_HTML, baseUrl: 'https://localhost/' }}
+        source={{ html: MAP_HTML, baseUrl: 'https://eyobazeze.vercel.app/' }}
         originWhitelist={['*']}
         javaScriptEnabled
         domStorageEnabled
