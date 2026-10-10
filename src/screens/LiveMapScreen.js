@@ -3,9 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platfor
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../components/RouteMap';
+import RealMap from '../components/RealMap';
 import { colors, typography } from '../theme/colors';
 import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
 import { CURRENT_LOCATION } from '../data/places';
+
+const MAP_PAD = { top: 50, bottom: 50 };
 
 export default function LiveMapScreen({ navigation }) {
   const [transportType, setTransportType] = useState('Bus');
@@ -31,7 +34,12 @@ export default function LiveMapScreen({ navigation }) {
       </View>
 
       <View style={styles.mapWrap}>
-        <RouteMap />
+        <RealMap
+          origin={plan.origin}
+          destination={plan.destination}
+          padding={MAP_PAD}
+          fallback={<RouteMap />}
+        />
       </View>
 
       <View style={styles.sheet}>

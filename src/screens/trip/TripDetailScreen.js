@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
+import RealMap from '../../components/RealMap';
+import { getPlace } from '../../data/places';
 import { colors, typography } from '../../theme/colors';
 import { getTrip } from '../../data/tripData';
 
@@ -11,6 +13,8 @@ const MODES = [
   { key: 'Bus', icon: 'bus' },
   { key: 'Train', icon: 'train' },
 ];
+
+const MAP_PAD = { top: 30, bottom: 30 };
 
 export default function TripDetailScreen({ route, navigation }) {
   const [mode, setMode] = useState(route.params?.mode || 'Bus');
@@ -27,7 +31,14 @@ export default function TripDetailScreen({ route, navigation }) {
         <Ionicons name="notifications-outline" size={20} color={colors.black} />
       </View>
 
-      <RouteMap height={220} />
+      <RealMap
+        height={220}
+        origin={route.params?.origin || getPlace('bole')}
+        destination={route.params?.destination || getPlace('piassa')}
+        padding={MAP_PAD}
+        interactive={false}
+        fallback={<RouteMap height={220} />}
+      />
 
       <ScrollView style={styles.sheet} contentContainerStyle={styles.sheetContent}>
         <View style={styles.grabber} />

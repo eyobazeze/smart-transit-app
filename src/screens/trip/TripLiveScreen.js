@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
+import RealMap from '../../components/RealMap';
+import { getPlace } from '../../data/places';
 import { colors, typography } from '../../theme/colors';
 import { getTrip } from '../../data/tripData';
 import { PLACES } from '../../data/places';
@@ -10,6 +12,7 @@ import { PLACES } from '../../data/places';
 // Demo pace: each stage lasts this many real seconds (the screen still shows real trip minutes).
 const DEMO_SECONDS = { walk: 7, wait: 7, ride: 26 };
 const TICK_MS = 250;
+const MAP_PAD = { top: 120, bottom: 240 };
 
 function confirm(title, message, onYes) {
   if (Platform.OS === 'web') {
@@ -100,7 +103,13 @@ export default function TripLiveScreen({ route, navigation }) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.mapWrap}>
-        <RouteMap busProgress={rideP} />
+        <RealMap
+          origin={origin || getPlace('bole')}
+          destination={destination || getPlace('piassa')}
+          progress={rideP}
+          padding={MAP_PAD}
+          fallback={<RouteMap busProgress={rideP} />}
+        />
 
         <View style={styles.headerBar}>
           <Ionicons name={stage === 'arrived' ? 'checkmark-circle' : 'navigate'} size={22} color={colors.white} />

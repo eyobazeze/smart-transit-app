@@ -66,3 +66,5 @@ export function findExact(text) {
   if (q === norm(CURRENT_LOCATION.name)) return CURRENT_LOCATION;
   return PLACES.find((p) => norm(p.name) === q) || null;
 }
+
+export const getPlace = (id) => PLACES.find((p) => p.id === id) || null;

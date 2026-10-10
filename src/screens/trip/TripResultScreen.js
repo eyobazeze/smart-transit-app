@@ -3,9 +3,12 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
+import RealMap from '../../components/RealMap';
+import { getPlace } from '../../data/places';
 import { colors, typography } from '../../theme/colors';
 import { getTrip } from '../../data/tripData';
 
+const MAP_PAD = { top: 40, bottom: 60 };
 const MODES = [
   { key: 'Taxi', icon: 'car' },
   { key: 'Bus', icon: 'bus' },
@@ -15,6 +18,8 @@ const MODES = [
 export default function TripResultScreen({ route, navigation }) {
   const [mode, setMode] = useState(route.params?.mode || 'Bus');
   const trip = getTrip(mode, route.params?.origin, route.params?.destination);
+  const mapOrigin = route.params?.origin || getPlace('bole');
+  const mapDest = route.params?.destination || getPlace('piassa');
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -35,7 +40,7 @@ export default function TripResultScreen({ route, navigation }) {
         </View>
       ) : null}
 
-      <RouteMap />
+      <RealMap origin={mapOrigin} destination={mapDest} padding={MAP_PAD} fallback={<RouteMap />} />
 
       <View style={styles.sheet}>
         <View style={styles.grabber} />

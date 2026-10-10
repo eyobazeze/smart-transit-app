@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import LiveRouteMap from '../components/LiveRouteMap';
+import RealMap from '../components/RealMap';
+import { getPlace } from '../data/places';
 import { colors, typography } from '../theme/colors';
 
 const BUSES = [
@@ -11,7 +13,12 @@ const BUSES = [
   { id: 'bus-3', progress: 0.15, currentLocation: 'Bole', status: 'Arrive in 15 min' },
 ];
 
+const MAP_PAD = { top: 70, bottom: 70 };
+
 export default function LiveMapResultScreen({ navigation, route }) {
+  const origin = route?.params?.origin || getPlace('meskel-square');
+  const destination = route?.params?.destination || getPlace('shola');
+  const goTrack = () => navigation.navigate('TripLive', { mode: 'Bus', origin: route?.params?.origin, destination: route?.params?.destination });
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.topBar}>
@@ -22,9 +29,13 @@ export default function LiveMapResultScreen({ navigation, route }) {
         <Ionicons name="notifications-outline" size={20} color={colors.black} />
       </View>
 
-      <LiveRouteMap
+      <RealMap
+        origin={origin}
+        destination={destination}
         buses={BUSES}
-        onTrack={() => navigation.navigate('TripLive', { mode: 'Bus', origin: route?.params?.origin, destination: route?.params?.destination })}
+        padding={MAP_PAD}
+        onTrack={goTrack}
+        fallback={<LiveRouteMap buses={BUSES} onTrack={goTrack} />}
       />
 
       <View style={styles.bottomBar}>
