@@ -1,7 +1,7 @@
-import React, { useState, useRef, forwardRef, useImperativeHandle } from 'react';
+import React, { useState, useRef, useEffect, forwardRef, useImperativeHandle } from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
-import { colors, typography } from '../theme/colors';
+import { colors, typography, radius, shadow } from '../theme/colors';
 import { CURRENT_LOCATION, searchPlaces, findExact } from '../data/places';
 
 const KIND_ICON = {
@@ -20,6 +20,14 @@ const LocationPlanner = forwardRef(function LocationPlanner({ value, onChange, s
     destination: value.destination ? value.destination.name : '',
   });
   const destRef = useRef(null);
+
+  // Keep the visible text in sync when the parent sets a place (quick-pick chips, swap, etc.)
+  useEffect(() => {
+    setText((t) => ({
+      origin: value.origin && value.origin.name !== t.origin ? value.origin.name : t.origin,
+      destination: value.destination && value.destination.name !== t.destination ? value.destination.name : t.destination,
+    }));
+  }, [value.origin, value.destination]);
 
   // Turn typed-but-not-picked text into the best matching place.
   const resolveOne = (field, t, current) => {
@@ -160,9 +168,8 @@ export function validatePlan({ origin, destination }) {
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: colors.white, borderRadius: 10, flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 20, paddingVertical: 6, gap: 15,
-    shadowColor: colors.black, shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 2,
+    backgroundColor: colors.white, borderRadius: radius.lg, flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 18, paddingVertical: 6, gap: 14, borderWidth: 1, borderColor: colors.primary100,
   },
   icons: { alignItems: 'center', width: 15 },
   dotOutline: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.primary800 },
@@ -173,12 +180,11 @@ const styles = StyleSheet.create({
   input: { flex: 1, ...typography.b1, color: colors.black, paddingVertical: 12, ...(Platform.OS === 'web' ? { outlineStyle: 'none' } : null) },
   inputCurrent: { color: colors.primary800 },
   list: {
-    backgroundColor: colors.white, borderRadius: 10, marginTop: 8, paddingVertical: 6,
-    shadowColor: colors.black, shadowOpacity: 0.05, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 2,
+    backgroundColor: colors.white, borderRadius: radius.lg, marginTop: 8, paddingVertical: 6, ...shadow.card,
   },
   listLabel: { ...typography.c2, color: colors.grey600, paddingHorizontal: 16, paddingTop: 8, paddingBottom: 2 },
   item: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 10 },
-  itemIcon: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.grey200, alignItems: 'center', justifyContent: 'center' },
+  itemIcon: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.primary50, alignItems: 'center', justifyContent: 'center' },
   itemName: { ...typography.b2, color: colors.black },
   itemArea: { ...typography.b3, color: colors.grey600 },
   empty: { ...typography.b3, color: colors.grey600, padding: 16 },
