@@ -65,7 +65,7 @@ export const tripsByMode = {
 };
 
 const SPEED_KMH = { Bus: 16, Taxi: 28, Train: 32 };
-const PER_KM = { Bus: 2, Taxi: 22, Train: 1.2 };
+const PER_KM = { Bus: 1, Taxi: 22, Train: 0.7 };
 const MIN_FARE = { Bus: 5, Taxi: 60, Train: 3 };
 
 function km(a, b) {

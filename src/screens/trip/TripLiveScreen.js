@@ -1,18 +1,19 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, Alert, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../../components/RouteMap';
 import RealMap from '../../components/RealMap';
 import { getPlace } from '../../data/places';
-import { colors, typography } from '../../theme/colors';
+import { colors, typography, gradients, radius, shadow } from '../../theme/colors';
+import { Button, PressableScale } from '../../components/ui';
 import { getTrip } from '../../data/tripData';
 import { PLACES } from '../../data/places';
 
 // Demo pace: each stage lasts this many real seconds (the screen still shows real trip minutes).
 const DEMO_SECONDS = { walk: 7, wait: 7, ride: 26 };
 const TICK_MS = 250;
-const MAP_PAD = { top: 120, bottom: 240 };
 
 function confirm(title, message, onYes) {
   if (Platform.OS === 'web') {
@@ -40,6 +41,8 @@ function nearestLandmark(origin, destination, t) {
 }
 
 export default function TripLiveScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
+  const mapPad = useMemo(() => ({ top: insets.top + 135, bottom: 250 }), [insets.top]);
   const mode = route.params?.mode || 'Bus';
   const origin = route.params?.origin;
   const destination = route.params?.destination;
@@ -69,12 +72,13 @@ export default function TripLiveScreen({ route, navigation }) {
     return () => clearInterval(id);
   }, [stage]);
 
-  const leftMin = Math.max(0, Math.ceil(
-    stage === 'walk' ? walk * (1 - p) + wait + ride
+  const leftExact = stage === 'walk' ? walk * (1 - p) + wait + ride
     : stage === 'wait' ? wait * (1 - p) + ride
     : stage === 'prompt' ? ride
     : stage === 'ride' ? ride * (1 - p)
-    : 0));
+    : 0;
+  const leftMin = Math.max(0, Math.ceil(leftExact));
+  const overall = Math.min(1, Math.max(0, 1 - leftExact / (walk + wait + ride)));
   const rideP = stage === 'ride' ? p : stage === 'arrived' ? 1 : 0;
   const kmTotal = parseFloat(trip.distance) || 0;
   const kmLeft = (kmTotal * (1 - rideP)).toFixed(1);
@@ -101,55 +105,62 @@ export default function TripLiveScreen({ route, navigation }) {
   const endEarly = () => confirm('End trip now?', 'You have not reached the destination yet.', () => { setStage('arrived'); setP(0); });
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <View style={styles.root}>
       <View style={styles.mapWrap}>
         <RealMap
           origin={origin || getPlace('bole')}
           destination={destination || getPlace('piassa')}
           progress={rideP}
-          padding={MAP_PAD}
+          padding={mapPad}
           fallback={<RouteMap busProgress={rideP} />}
         />
 
-        <View style={styles.headerBar}>
-          <Ionicons name={stage === 'arrived' ? 'checkmark-circle' : 'navigate'} size={22} color={colors.white} />
-          <View style={{ flex: 1 }}>
-            <Text style={styles.headerText} numberOfLines={1}>{headline}</Text>
-            <Text style={styles.headerSub} numberOfLines={1}>{sub}</Text>
+        <LinearGradient
+          colors={gradients.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+          style={[styles.headerBar, shadow.float, { top: insets.top + 12 }]}
+        >
+          <View style={styles.headerRow}>
+            <View style={styles.headerIcon}>
+              <Ionicons name={stage === 'arrived' ? 'checkmark' : isTaxi ? 'car' : mode === 'Train' ? 'train' : 'bus'} size={20} color={colors.white} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headerText} numberOfLines={1}>{headline}</Text>
+              <Text style={styles.headerSub} numberOfLines={1}>{sub}</Text>
+            </View>
           </View>
-        </View>
+          <View style={styles.track}><View style={[styles.trackFill, { width: `${Math.round(overall * 100)}%` }]} /></View>
+        </LinearGradient>
 
         {stage === 'prompt' ? (
-          <View style={styles.card}>
+          <View style={[styles.card, shadow.float]}>
             <Text style={styles.cardTitle}>Are you boarding this {vehicle} now?</Text>
-            <TouchableOpacity style={styles.optionPrimary} onPress={() => { setTracking(false); setStage('ride'); setP(0); }}>
-              <Ionicons name="checkmark-circle" size={18} color={colors.white} />
-              <Text style={styles.optionPrimaryText}>Yes, I'm onboard</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.option} onPress={() => { setTracking(true); setStage('ride'); setP(0); }}>
-              <Ionicons name="eye-outline" size={18} color={colors.black} />
-              <Text style={styles.optionText}>No, just tracking</Text>
-            </TouchableOpacity>
+            <Button title="Yes, I'm onboard" icon="checkmark-circle" onPress={() => { setTracking(false); setStage('ride'); setP(0); }} />
+            <Button title="No, just tracking" icon="eye-outline" variant="secondary" onPress={() => { setTracking(true); setStage('ride'); setP(0); }} />
           </View>
         ) : stage === 'arrived' ? (
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>{tracking ? 'Tracking finished' : 'Trip complete'}</Text>
+          <View style={[styles.card, shadow.float]}>
+            <View style={styles.doneRow}>
+              <View style={styles.doneIcon}><Ionicons name="checkmark" size={20} color={colors.white} /></View>
+              <Text style={styles.cardTitle}>{tracking ? 'Tracking finished' : 'Trip complete'}</Text>
+            </View>
             <View style={styles.summaryRow}>
               <View style={styles.summaryItem}><Text style={styles.summaryValue}>{trip.duration}</Text><Text style={styles.summaryLabel}>Time</Text></View>
+              <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}><Text style={styles.summaryValue}>{trip.distance}</Text><Text style={styles.summaryLabel}>Distance</Text></View>
+              <View style={styles.summaryDivider} />
               <View style={styles.summaryItem}><Text style={styles.summaryValue}>{trip.cost}</Text><Text style={styles.summaryLabel}>Fare</Text></View>
             </View>
           </View>
         ) : (
-          <View style={styles.card}>
+          <View style={[styles.card, shadow.float]}>
             {trip.steps.map((st, i) => {
               const done = i < stepIndex, current = i === stepIndex;
               return (
                 <View key={i} style={styles.stepRow}>
                   <Ionicons
                     name={done ? 'checkmark-circle' : current ? 'radio-button-on' : 'ellipse-outline'}
-                    size={16}
-                    color={done || current ? colors.primary800 : colors.grey400}
+                    size={18}
+                    color={done || current ? colors.primary800 : colors.grey300}
                   />
                   <Text style={[styles.stepText, current && styles.stepTextCurrent, done && styles.stepTextDone]} numberOfLines={1}>{st.title}</Text>
                   <Text style={styles.stepTime}>{st.time}</Text>
@@ -160,68 +171,59 @@ export default function TripLiveScreen({ route, navigation }) {
         )}
       </View>
 
-      <View style={styles.bottom}>
+      <View style={[styles.bottom, shadow.float, { paddingBottom: Math.max(insets.bottom, 14) }]}>
         {stage !== 'arrived' ? (
-          <TouchableOpacity style={styles.circle} onPress={cancel} accessibilityLabel="Cancel trip">
+          <PressableScale onPress={cancel} style={styles.circle} accessibilityLabel="Cancel trip">
             <Ionicons name="close" size={22} color={colors.grey600} />
-          </TouchableOpacity>
+          </PressableScale>
         ) : <View style={styles.circleSpacer} />}
 
         <View style={styles.info}>
-          <View style={styles.infoRow}>
-            <Ionicons name="time-outline" size={17} color={colors.primary800} />
-            <Text style={styles.eta}>{stage === 'arrived' ? 'Arrived' : `${leftMin} min left`}</Text>
-          </View>
+          <Text style={styles.eta}>{stage === 'arrived' ? 'Arrived' : `${leftMin} min left`}</Text>
           <Text style={styles.detail}>{stage === 'arrived' ? trip.arriveTime : `${kmLeft} km · arrive ${trip.arriveTime}`}</Text>
         </View>
 
         {stage === 'arrived' ? (
-          <TouchableOpacity style={styles.pill} onPress={goHome}><Text style={styles.pillText}>Done</Text></TouchableOpacity>
+          <Button title="Done" compact onPress={goHome} />
         ) : stage === 'ride' ? (
-          <TouchableOpacity style={styles.pill} onPress={endEarly}><Text style={styles.pillText}>End trip</Text></TouchableOpacity>
+          <Button title="End trip" compact onPress={endEarly} />
         ) : <View style={styles.circleSpacer} />}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.white },
+  root: { flex: 1, backgroundColor: colors.bg },
   mapWrap: { flex: 1, position: 'relative' },
-  headerBar: {
-    position: 'absolute', top: 20, left: 25, right: 25, backgroundColor: colors.primary800, borderRadius: 12,
-    flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingVertical: 14,
-  },
+  headerBar: { position: 'absolute', left: 16, right: 16, borderRadius: radius.lg, paddingHorizontal: 16, paddingTop: 14, paddingBottom: 14, gap: 12 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  headerIcon: { width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
   headerText: { ...typography.s1, color: colors.white },
-  headerSub: { ...typography.b3, color: colors.white, opacity: 0.85, marginTop: 2 },
-  card: {
-    position: 'absolute', left: 25, right: 25, bottom: 20, backgroundColor: colors.white, borderRadius: 12,
-    padding: 16, gap: 12, shadowColor: colors.black, shadowOpacity: 0.12, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 4,
-  },
-  cardTitle: { ...typography.s2, color: colors.black },
+  headerSub: { ...typography.b3, color: 'rgba(255,255,255,0.85)', marginTop: 1 },
+  track: { height: 5, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.25)', overflow: 'hidden' },
+  trackFill: { height: '100%', borderRadius: 3, backgroundColor: colors.white },
+  card: { position: 'absolute', left: 16, right: 16, bottom: 16, backgroundColor: colors.white, borderRadius: radius.lg, padding: 16, gap: 12 },
+  cardTitle: { ...typography.s2, color: colors.ink },
   stepRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   stepText: { ...typography.b3, color: colors.grey600, flex: 1 },
-  stepTextCurrent: { color: colors.black, fontFamily: 'Inter_600SemiBold' },
+  stepTextCurrent: { color: colors.ink, fontFamily: 'Inter_600SemiBold' },
   stepTextDone: { color: colors.grey400 },
-  stepTime: { ...typography.b3, color: colors.grey400 },
-  optionPrimary: { backgroundColor: colors.primary800, borderRadius: 40, paddingVertical: 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' },
-  optionPrimaryText: { ...typography.s2, color: colors.white },
-  option: { borderWidth: 1, borderColor: colors.grey300, borderRadius: 40, paddingVertical: 14, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center' },
-  optionText: { ...typography.b2, color: colors.black },
-  summaryRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  stepTime: { ...typography.c2, color: colors.grey400 },
+  doneRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  doneIcon: { width: 30, height: 30, borderRadius: 15, backgroundColor: colors.success, alignItems: 'center', justifyContent: 'center' },
+  summaryRow: { flexDirection: 'row', backgroundColor: colors.bg, borderRadius: radius.md, paddingVertical: 12 },
   summaryItem: { flex: 1, alignItems: 'center', gap: 2 },
-  summaryValue: { ...typography.s1, color: colors.primary800 },
-  summaryLabel: { ...typography.b3, color: colors.grey600 },
+  summaryDivider: { width: 1, backgroundColor: colors.grey200 },
+  summaryValue: { ...typography.s2, color: colors.primary800 },
+  summaryLabel: { ...typography.c2, color: colors.grey600 },
   bottom: {
-    backgroundColor: colors.white, borderTopLeftRadius: 25, borderTopRightRadius: 25, flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', paddingHorizontal: 25, paddingVertical: 15, minHeight: 100,
+    backgroundColor: colors.white, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', paddingHorizontal: 20, paddingTop: 16, gap: 12,
   },
-  circle: { width: 50, height: 50, borderRadius: 25, borderWidth: 1, borderColor: colors.grey300, alignItems: 'center', justifyContent: 'center' },
-  circleSpacer: { width: 50, height: 50 },
-  info: { alignItems: 'center', gap: 4, flex: 1 },
-  infoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  eta: { ...typography.s1, color: colors.primary800 },
-  detail: { ...typography.b3, color: colors.primary800 },
-  pill: { backgroundColor: colors.primary800, borderRadius: 30, paddingHorizontal: 18, height: 50, alignItems: 'center', justifyContent: 'center' },
-  pillText: { ...typography.s2, color: colors.white },
+  circle: { width: 48, height: 48, borderRadius: 24, borderWidth: 1.5, borderColor: colors.grey200, alignItems: 'center', justifyContent: 'center' },
+  circleSpacer: { width: 48, height: 48 },
+  info: { alignItems: 'center', gap: 2, flex: 1 },
+  eta: { ...typography.h5, color: colors.primary800 },
+  detail: { ...typography.c2, color: colors.grey600 },
 });
