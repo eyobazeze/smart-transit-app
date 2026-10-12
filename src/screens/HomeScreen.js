@@ -15,7 +15,7 @@ import { PressableScale, Button, Card, Chip, TripCard } from '../components/ui';
 const RECENT_TRIPS = [
   { id: '1', route: 'Bole → Piassa', distance: '7.2 km', time: '18 mins', cost: '35 ETB', icon: 'car', mode: 'Taxi' },
   { id: '2', route: 'Kebena → Meskel Square', distance: '5.4 km', time: '25 mins', cost: '10 ETB', icon: 'bus', mode: 'Bus' },
-  { id: '3', route: 'Bole Airport → Africa Avenue', distance: '12.8 km', time: '45 mins', cost: '20 ETB', icon: 'car', mode: 'Taxi' },
+  { id: '3', route: 'Bole Airport → Africa Avenue', distance: '12.8 km', time: '45 mins', cost: '25 ETB', icon: 'car', mode: 'Taxi' },
 ];
 
 const MODES = [
