@@ -23,7 +23,7 @@ export const typography = {
 };
 
 // ---- Extended tokens (added in the UI pass; the original keys above are unchanged) ----
-Object.assign(colors, {
+Object.assign(colors, { grey500: '#8b93a1',
   primary900: '#1658d6',
   primary700: '#4a9bff',
   primary100: '#e3f0ff',

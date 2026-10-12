@@ -1,14 +1,8 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useRef, useState } from 'react';
+import { Text, StyleSheet } from 'react-native';
 import InputField from '../components/InputField';
+import { AuthLayout, SocialRow } from '../components/Auth';
+import { Button, PressableScale } from '../components/ui';
 import { colors, typography } from '../theme/colors';
 
 export default function SignUpScreen({ navigation }) {
@@ -16,108 +10,45 @@ export default function SignUpScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
+  const [errors, setErrors] = useState({});
+  const emailRef = useRef(null);
+  const pwRef = useRef(null);
+
+  const clear = (k) => errors[k] && setErrors({ ...errors, [k]: null });
+  const submit = () => {
+    const e = {};
+    if (name.trim().length < 2) e.name = 'Enter your full name';
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = 'Enter a valid email address';
+    if (password.length < 6) e.password = 'Password must be at least 6 characters';
+    setErrors(e);
+    if (!Object.keys(e).length) navigation.replace('Main');
+  };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Create an Account</Text>
-          <Text style={styles.subtitle}>Join to plan, track, and ride smarter.</Text>
-        </View>
-
-        <View style={styles.illustration}>
-          <Ionicons name="people" size={64} color={colors.primary800} />
-        </View>
-
-        <View style={styles.form}>
-          <InputField icon="person-outline" placeholder="Enter Full Name" value={name} onChangeText={setName} />
-          <InputField
-            icon="mail-outline"
-            placeholder="Enter Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-          <InputField
-            icon="lock-closed-outline"
-            placeholder="Enter password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry={secure}
-            isPassword
-            toggleSecure={() => setSecure(!secure)}
-          />
-
-          <TouchableOpacity style={styles.signUpButton} onPress={() => navigation.replace('Main')}>
-            <Text style={styles.signUpText}>Sign Up</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.socialSection}>
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.orText}>Or</Text>
-            <View style={styles.divider} />
-          </View>
-
-          <View style={styles.socialIcons}>
-            <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-google" size={24} color={colors.black} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-apple" size={24} color={colors.black} />
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.socialButton}>
-              <Ionicons name="logo-facebook" size={24} color="#1877F2" />
-            </TouchableOpacity>
-          </View>
-
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.accountText}>
-              Already have an account? <Text style={styles.accountLink}>Login</Text>
+    <AuthLayout
+      title="Create account"
+      subtitle="Join to plan, track and ride smarter."
+      footer={
+        <>
+          <SocialRow />
+          <PressableScale onPress={() => navigation.navigate('Login')} haptic={false} style={styles.switchWrap}>
+            <Text style={styles.switchText}>
+              Already have an account? <Text style={styles.link}>Sign in</Text>
             </Text>
-          </TouchableOpacity>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+          </PressableScale>
+        </>
+      }
+    >
+      <InputField icon="person-outline" placeholder="Full name" value={name} onChangeText={(t) => { setName(t); clear('name'); }} autoCapitalize="words" error={errors.name} returnKeyType="next" onSubmitEditing={() => emailRef.current && emailRef.current.focus()} />
+      <InputField inputRef={emailRef} icon="mail-outline" placeholder="Email address" value={email} onChangeText={(t) => { setEmail(t); clear('email'); }} keyboardType="email-address" error={errors.email} returnKeyType="next" onSubmitEditing={() => pwRef.current && pwRef.current.focus()} />
+      <InputField inputRef={pwRef} icon="lock-closed-outline" placeholder="Password (6+ characters)" value={password} onChangeText={(t) => { setPassword(t); clear('password'); }} secureTextEntry={secure} isPassword toggleSecure={() => setSecure(!secure)} error={errors.password} returnKeyType="done" onSubmitEditing={submit} />
+      <Button title="Create Account" onPress={submit} />
+    </AuthLayout>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.white },
-  container: { padding: 25, paddingTop: 40, paddingBottom: 40 },
-  header: { marginBottom: 20 },
-  title: { ...typography.h4, color: colors.primary800, marginBottom: 5 },
-  subtitle: { ...typography.b3, color: colors.grey600 },
-  illustration: {
-    height: 110,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 20,
-  },
-  form: { gap: 20 },
-  signUpButton: {
-    backgroundColor: colors.primary800,
-    borderRadius: 15,
-    paddingVertical: 18,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  signUpText: { ...typography.s2, color: colors.white },
-  socialSection: { marginTop: 30, alignItems: 'center', gap: 15 },
-  dividerRow: { flexDirection: 'row', alignItems: 'center', width: '100%', gap: 16 },
-  divider: { flex: 1, height: 1, backgroundColor: colors.grey300 },
-  orText: { ...typography.b3, color: colors.black },
-  socialIcons: { flexDirection: 'row', gap: 20 },
-  socialButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    borderWidth: 1,
-    borderColor: colors.grey300,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  accountText: { ...typography.b3, color: colors.grey600 },
-  accountLink: { ...typography.b4, color: colors.primary800 },
+  switchWrap: { alignSelf: 'center', paddingVertical: 6 },
+  switchText: { ...typography.b3, color: colors.grey600 },
+  link: { ...typography.b4, color: colors.primary800 },
 });
