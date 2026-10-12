@@ -3,12 +3,13 @@ import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, gradients, radius, shadow } from '../theme/colors';
+import { getUser } from '../data/session';
 import { StackHeader, Button, SettingsGroup, SettingsRow } from '../components/ui';
 
 export default function ProfileScreen({ navigation }) {
+  const user = getUser();
   const [location, setLocation] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
 
   return (
     <View style={styles.root}>
@@ -16,8 +17,8 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <LinearGradient colors={gradients.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.card, shadow.float]}>
           <View style={styles.avatar}><Ionicons name="person" size={36} color={colors.primary800} /></View>
-          <Text style={styles.name}>John Cena</Text>
-          <Text style={styles.email}>johncena@gmail.com</Text>
+          <Text style={styles.name}>{user.name}</Text>
+          <Text style={styles.email}>{user.email}</Text>
           <View style={styles.stats}>
             <View style={styles.stat}><Text style={styles.statValue}>24</Text><Text style={styles.statLabel}>Trips</Text></View>
             <View style={styles.statDivider} />
@@ -32,8 +33,7 @@ export default function ProfileScreen({ navigation }) {
         <SettingsGroup title="Preferences">
           <SettingsRow icon="location-outline" label="Location" type="toggle" value={location} onValueChange={setLocation} />
           <SettingsRow icon="globe-outline" label="Language" onPress={() => {}} />
-          <SettingsRow icon="notifications-outline" label="Push Notifications" type="toggle" value={pushNotifications} onValueChange={setPushNotifications} />
-          <SettingsRow icon="moon-outline" label="Dark Mode" type="toggle" value={darkMode} onValueChange={setDarkMode} last />
+          <SettingsRow icon="notifications-outline" label="Push Notifications" type="toggle" value={pushNotifications} onValueChange={setPushNotifications} last />
         </SettingsGroup>
 
         <SettingsGroup title="Other">

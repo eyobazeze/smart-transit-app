@@ -4,6 +4,7 @@ import InputField from '../components/InputField';
 import { AuthLayout, SocialRow } from '../components/Auth';
 import { Button, PressableScale } from '../components/ui';
 import { colors, typography } from '../theme/colors';
+import { signIn } from '../data/session';
 
 export default function SignUpScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -21,7 +22,7 @@ export default function SignUpScreen({ navigation }) {
     if (!/^\S+@\S+\.\S+$/.test(email.trim())) e.email = 'Enter a valid email address';
     if (password.length < 6) e.password = 'Password must be at least 6 characters';
     setErrors(e);
-    if (!Object.keys(e).length) navigation.replace('Main');
+    if (!Object.keys(e).length) { signIn({ name, email }); navigation.replace('Main'); }
   };
 
   return (

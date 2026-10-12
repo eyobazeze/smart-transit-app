@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, radius, shadow } from '../theme/colors';
+import { getUser } from '../data/session';
 import { TabHeader, PressableScale, SettingsGroup, SettingsRow } from '../components/ui';
 
 export default function SettingsScreen({ navigation }) {
+  const user = getUser();
   const [toggles, setToggles] = useState({
     tripReminders: true,
     liveArrivalAlerts: true,
@@ -21,8 +23,8 @@ export default function SettingsScreen({ navigation }) {
       <PressableScale onPress={() => navigation.navigate('Profile')} style={[styles.profile, shadow.card]}>
         <View style={styles.avatar}><Ionicons name="person" size={26} color={colors.white} /></View>
         <View style={{ flex: 1 }}>
-          <Text style={styles.name}>John Cena</Text>
-          <Text style={styles.email}>johncena@gmail.com</Text>
+          <Text style={styles.name}>{user.name}</Text>
+          <Text style={styles.email}>{user.email}</Text>
         </View>
         <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
       </PressableScale>
