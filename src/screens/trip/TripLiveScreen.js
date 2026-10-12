@@ -111,6 +111,7 @@ export default function TripLiveScreen({ route, navigation }) {
           origin={origin || getPlace('bole')}
           destination={destination || getPlace('piassa')}
           progress={rideP}
+          vehicle={trip.mode}
           padding={mapPad}
           fallback={<RouteMap busProgress={rideP} />}
         />

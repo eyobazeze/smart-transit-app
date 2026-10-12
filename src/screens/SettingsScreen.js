@@ -1,37 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Switch } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { colors, typography } from '../theme/colors';
-
-function Row({ icon, label, type = 'arrow', value, onValueChange, onPress, danger }) {
-  return (
-    <TouchableOpacity style={styles.row} onPress={onPress} disabled={type === 'toggle'} activeOpacity={0.6}>
-      <View style={styles.rowLeft}>
-        <Ionicons name={icon} size={18} color={danger ? colors.red500 : colors.black} />
-        <Text style={[styles.rowLabel, danger && { color: colors.red500 }]}>{label}</Text>
-      </View>
-      {type === 'toggle' ? (
-        <Switch
-          value={value}
-          onValueChange={onValueChange}
-          trackColor={{ true: colors.primary800, false: colors.grey300 }}
-        />
-      ) : (
-        <Ionicons name="chevron-forward" size={14} color={colors.grey400} />
-      )}
-    </TouchableOpacity>
-  );
-}
-
-function Section({ title, children }) {
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionTitle}>{title}</Text>
-      <View>{children}</View>
-    </View>
-  );
-}
+import { colors, typography, radius, shadow } from '../theme/colors';
+import { TabHeader, PressableScale, SettingsGroup, SettingsRow } from '../components/ui';
 
 export default function SettingsScreen({ navigation }) {
   const [toggles, setToggles] = useState({
@@ -40,86 +11,75 @@ export default function SettingsScreen({ navigation }) {
     serviceDisruptions: false,
     liveLocationSharing: true,
   });
-  const toggle = (key) => setToggles((t) => ({ ...t, [key]: !t[key] }));
+  const set = (key) => (v) => setToggles((t) => ({ ...t, [key]: v }));
+  const noop = () => {};
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.topBar}>
-        <View style={styles.titleRow}>
-          <Ionicons name="settings-sharp" size={18} color={colors.black} />
-          <Text style={styles.title}>Settings</Text>
+    <View style={styles.root}>
+      <TabHeader title="Settings" subtitle="Manage your account and preferences" icon="settings" bottomPad={50} />
+      <View style={styles.profileWrap}>
+      <PressableScale onPress={() => navigation.navigate('Profile')} style={[styles.profile, shadow.card]}>
+        <View style={styles.avatar}><Ionicons name="person" size={26} color={colors.white} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.name}>John Cena</Text>
+          <Text style={styles.email}>johncena@gmail.com</Text>
         </View>
-        <View style={{ width: 20 }} />
+        <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
+      </PressableScale>
       </View>
+      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-      <ScrollView contentContainerStyle={styles.content}>
-        <Section title="Account Settings">
-          <Row icon="person-outline" label="Edit Profile" onPress={() => navigation.navigate('Profile')} />
-          <Row icon="language-outline" label="Language" onPress={() => {}} />
-          <Row icon="key-outline" label="Change Password" onPress={() => {}} />
-        </Section>
+        <SettingsGroup title="Account">
+          <SettingsRow icon="person-outline" label="Edit Profile" onPress={() => navigation.navigate('Profile')} />
+          <SettingsRow icon="language-outline" label="Language" onPress={noop} />
+          <SettingsRow icon="key-outline" label="Change Password" onPress={noop} last />
+        </SettingsGroup>
 
-        <Section title="Notifications">
-          <Row icon="alarm-outline" label="Trip Reminders" type="toggle" value={toggles.tripReminders} onValueChange={() => toggle('tripReminders')} />
-          <Row icon="notifications-outline" label="Live Arrival Alerts" type="toggle" value={toggles.liveArrivalAlerts} onValueChange={() => toggle('liveArrivalAlerts')} />
-          <Row icon="warning-outline" label="Service Disruptions or Delays" type="toggle" value={toggles.serviceDisruptions} onValueChange={() => toggle('serviceDisruptions')} />
-        </Section>
+        <SettingsGroup title="Notifications">
+          <SettingsRow icon="alarm-outline" label="Trip Reminders" type="toggle" value={toggles.tripReminders} onValueChange={set('tripReminders')} />
+          <SettingsRow icon="notifications-outline" label="Live Arrival Alerts" type="toggle" value={toggles.liveArrivalAlerts} onValueChange={set('liveArrivalAlerts')} />
+          <SettingsRow icon="warning-outline" label="Service Disruptions" type="toggle" value={toggles.serviceDisruptions} onValueChange={set('serviceDisruptions')} last />
+        </SettingsGroup>
 
-        <Section title="Privacy & Location">
-          <Row icon="location-outline" label="Live Location Sharing" type="toggle" value={toggles.liveLocationSharing} onValueChange={() => toggle('liveLocationSharing')} />
-          <Row icon="document-text-outline" label="Privacy Policy" onPress={() => {}} />
-          <Row icon="shield-checkmark-outline" label="Permissions Settings" onPress={() => {}} />
-        </Section>
+        <SettingsGroup title="Privacy & Location">
+          <SettingsRow icon="location-outline" label="Live Location Sharing" type="toggle" value={toggles.liveLocationSharing} onValueChange={set('liveLocationSharing')} />
+          <SettingsRow icon="document-text-outline" label="Privacy Policy" onPress={noop} />
+          <SettingsRow icon="shield-checkmark-outline" label="Permissions" onPress={noop} last />
+        </SettingsGroup>
 
-        <Section title="App Preferences">
-          <Row icon="color-palette-outline" label="Appearance / Theme" onPress={() => {}} />
-          <Row icon="cloud-offline-outline" label="Offline Mode" onPress={() => {}} />
-          <Row icon="bus-outline" label="Default Transport Mode" onPress={() => {}} />
-        </Section>
+        <SettingsGroup title="App preferences">
+          <SettingsRow icon="color-palette-outline" label="Appearance / Theme" onPress={noop} />
+          <SettingsRow icon="cloud-offline-outline" label="Offline Mode" onPress={noop} />
+          <SettingsRow icon="bus-outline" label="Default Transport Mode" onPress={noop} last />
+        </SettingsGroup>
 
-        <Section title="Help & Support">
-          <Row icon="help-circle-outline" label="FAQs" onPress={() => {}} />
-          <Row icon="flag-outline" label="Report a Problem" onPress={() => {}} />
-          <Row icon="chatbox-ellipses-outline" label="Send Feedback" onPress={() => {}} />
-        </Section>
+        <SettingsGroup title="Help & support">
+          <SettingsRow icon="help-circle-outline" label="FAQs" onPress={noop} />
+          <SettingsRow icon="flag-outline" label="Report a Problem" onPress={noop} />
+          <SettingsRow icon="chatbox-ellipses-outline" label="Send Feedback" onPress={noop} last />
+        </SettingsGroup>
 
-        <Section title="About">
-          <Row icon="information-circle-outline" label="Version Info" onPress={() => {}} />
-          <Row icon="code-slash-outline" label="Developer Info" onPress={() => {}} />
-          <Row icon="document-outline" label="Terms & Conditions" onPress={() => {}} />
-        </Section>
+        <SettingsGroup title="About">
+          <SettingsRow icon="information-circle-outline" label="Version Info" onPress={noop} />
+          <SettingsRow icon="code-slash-outline" label="Developer Info" onPress={noop} />
+          <SettingsRow icon="document-outline" label="Terms & Conditions" onPress={noop} last />
+        </SettingsGroup>
 
-        <Section title="Account Actions">
-          <Row icon="log-out-outline" label="Logout" onPress={() => navigation.replace('Login')} />
-          <Row icon="trash-outline" label="Delete Account" onPress={() => {}} danger />
-        </Section>
+        <SettingsGroup title="Account actions">
+          <SettingsRow icon="log-out-outline" label="Logout" onPress={() => navigation.replace('Login')} />
+          <SettingsRow icon="trash-outline" label="Delete Account" onPress={noop} danger last />
+        </SettingsGroup>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.white },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 25,
-    backgroundColor: colors.white,
-  },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { ...typography.s1, color: colors.black },
-  content: { paddingHorizontal: 25, paddingBottom: 40, gap: 20 },
-  section: { gap: 10 },
-  sectionTitle: { ...typography.s2, color: colors.black },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.grey200,
-  },
-  rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  rowLabel: { ...typography.b3, color: colors.black },
+  root: { flex: 1, backgroundColor: colors.bg },
+  content: { paddingHorizontal: 20, paddingBottom: 24, gap: 22 },
+  profileWrap: { marginTop: -30, marginHorizontal: 20, marginBottom: 14, zIndex: 2 },
+  profile: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.white, borderRadius: radius.lg, padding: 14 },
+  avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: colors.primary800, alignItems: 'center', justifyContent: 'center' },
+  name: { ...typography.s2, color: colors.ink },
+  email: { ...typography.b3, color: colors.grey600, marginTop: 1 },
 });

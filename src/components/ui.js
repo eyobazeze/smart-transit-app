@@ -1,5 +1,6 @@
 import React, { useRef } from 'react';
-import { Animated, Pressable, Text, View, StyleSheet } from 'react-native';
+import { Animated, Pressable, Text, View, StyleSheet, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const LAYOUT_KEYS = ['flex', 'flexGrow', 'flexShrink', 'flexBasis', 'alignSelf', 'width', 'height', 'margin', 'marginTop', 'marginBottom', 'marginLeft', 'marginRight', 'marginHorizontal', 'marginVertical', 'position', 'top', 'left', 'right', 'bottom', 'zIndex'];
 function splitStyle(style) {
@@ -99,3 +100,133 @@ export function RoundButton({ icon, onPress, style, color = colors.ink, size = 2
   );
 }
 
+
+/** Gradient header for the main tab screens. */
+export function TabHeader({ title, subtitle, icon, right, children, bottomPad = 24 }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <LinearGradient colors={gradients.hero} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.tabHeader, { paddingTop: insets.top + 14, paddingBottom: bottomPad }]}>
+      <View style={styles.tabHeaderRow}>
+        {icon ? <View style={styles.tabHeaderIcon}><Ionicons name={icon} size={20} color={colors.white} /></View> : null}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.tabHeaderTitle}>{title}</Text>
+          {subtitle ? <Text style={styles.tabHeaderSub}>{subtitle}</Text> : null}
+        </View>
+        {right}
+      </View>
+      {children}
+    </LinearGradient>
+  );
+}
+
+/** Back button + title for stack screens (Profile, Notifications...). */
+export function StackHeader({ title, onBack, right }) {
+  const insets = useSafeAreaInsets();
+  return (
+    <View style={[styles.stackHeader, { paddingTop: insets.top + 10 }]}>
+      <RoundButton icon="arrow-back" onPress={onBack} />
+      <Text style={styles.stackTitle}>{title}</Text>
+      {right || <View style={{ width: 46 }} />}
+    </View>
+  );
+}
+
+/** Reusable trip card (Home recents, My Trips). */
+export function TripCard({ route: label, distance, time, extra, mode, onPress }) {
+  const [from, to] = String(label).split(/→|->/).map((x) => x.trim());
+  const icon = mode === 'Bus' ? 'bus' : mode === 'Train' ? 'train' : 'car';
+  return (
+    <PressableScale onPress={onPress} style={[styles.tripCard, shadow.card]}>
+      <View style={styles.tripIcon}><Ionicons name={icon} size={20} color={colors.primary800} /></View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.tripFrom} numberOfLines={1}>{from}</Text>
+        <View style={styles.tripToRow}>
+          <Ionicons name="arrow-forward" size={12} color={colors.grey400} />
+          <Text style={styles.tripTo} numberOfLines={1}>{to}</Text>
+        </View>
+        <View style={styles.tripStats}>
+          <Text style={styles.tripStat}>{distance}</Text><View style={styles.tripDot} />
+          <Text style={styles.tripStat}>{time}</Text>
+          {extra ? (<><View style={styles.tripDot} /><Text style={styles.tripStat}>{extra}</Text></>) : null}
+        </View>
+      </View>
+      <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
+    </PressableScale>
+  );
+}
+
+/** Titled card holding settings rows. */
+export function SettingsGroup({ title, children }) {
+  return (
+    <View style={{ gap: 10 }}>
+      <Text style={styles.groupTitle}>{title}</Text>
+      <View style={[styles.group, shadow.card]}>{children}</View>
+    </View>
+  );
+}
+
+export function SettingsRow({ icon, label, type = 'arrow', value, onValueChange, onPress, danger, last }) {
+  const tint = danger ? colors.red500 : colors.primary800;
+  return (
+    <PressableScale
+      onPress={type === 'toggle' ? () => onValueChange && onValueChange(!value) : onPress}
+      style={[styles.sRow, !last && styles.sRowBorder]}
+      scaleTo={0.99}
+    >
+      <View style={[styles.sIcon, { backgroundColor: danger ? colors.redSoft : colors.primary100 }]}>
+        <Ionicons name={icon} size={18} color={tint} />
+      </View>
+      <Text style={[styles.sLabel, danger && { color: colors.red500 }]} numberOfLines={1}>{label}</Text>
+      {type === 'toggle' ? (
+        <Switch value={value} onValueChange={onValueChange} trackColor={{ true: colors.primary800, false: colors.grey300 }} thumbColor={colors.white} activeThumbColor={colors.white} />
+      ) : (
+        <Ionicons name="chevron-forward" size={16} color={colors.grey400} />
+      )}
+    </PressableScale>
+  );
+}
+
+/** Two-way pill switch, e.g. Saved / Recent. */
+export function SegmentedControl({ options, value, onChange }) {
+  return (
+    <View style={styles.seg}>
+      {options.map((o) => {
+        const on = o.key === value;
+        return (
+          <PressableScale key={o.key} onPress={() => onChange(o.key)} style={[styles.segItem, on && styles.segItemOn]} scaleTo={0.96}>
+            {o.icon ? <Ionicons name={o.icon} size={16} color={on ? colors.white : colors.grey600} /> : null}
+            <Text style={[styles.segText, on && { color: colors.white }]}>{o.label}</Text>
+          </PressableScale>
+        );
+      })}
+    </View>
+  );
+}
+
+Object.assign(styles, StyleSheet.create({
+  tabHeader: { paddingHorizontal: 22, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
+  tabHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  tabHeaderIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },
+  tabHeaderTitle: { ...typography.h5, color: colors.white },
+  tabHeaderSub: { ...typography.b3, color: 'rgba(255,255,255,0.85)', marginTop: 1 },
+  stackHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingBottom: 12, backgroundColor: colors.bg },
+  stackTitle: { ...typography.s1, color: colors.ink },
+  tripCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: colors.white, borderRadius: radius.lg, padding: 14 },
+  tripIcon: { width: 46, height: 46, borderRadius: 14, backgroundColor: colors.primary100, alignItems: 'center', justifyContent: 'center' },
+  tripFrom: { ...typography.b2, color: colors.ink },
+  tripToRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 1 },
+  tripTo: { ...typography.b3, color: colors.grey600, flex: 1 },
+  tripStats: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 6 },
+  tripStat: { ...typography.c2, color: colors.primary800 },
+  tripDot: { width: 3, height: 3, borderRadius: 2, backgroundColor: colors.grey300 },
+  groupTitle: { ...typography.label, color: colors.grey400, marginLeft: 4, textTransform: 'uppercase' },
+  group: { backgroundColor: colors.white, borderRadius: radius.lg, overflow: 'hidden' },
+  sRow: { flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: colors.white },
+  sRowBorder: { borderBottomWidth: 1, borderBottomColor: colors.grey200 },
+  sIcon: { width: 36, height: 36, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  sLabel: { ...typography.b2, color: colors.ink, flex: 1 },
+  seg: { flexDirection: 'row', backgroundColor: colors.white, borderRadius: radius.pill, padding: 4, ...shadow.card },
+  segItem: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 7, paddingVertical: 12, borderRadius: radius.pill },
+  segItemOn: { backgroundColor: colors.primary800 },
+  segText: { ...typography.b4, color: colors.grey600 },
+}));

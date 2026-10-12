@@ -1,140 +1,78 @@
-import React, { useState, useRef } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState, useRef, useMemo } from 'react';
+import { View, Text, StyleSheet, KeyboardAvoidingView } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import RouteMap from '../components/RouteMap';
 import RealMap from '../components/RealMap';
-import { colors, typography } from '../theme/colors';
+import { colors, typography, radius, shadow } from '../theme/colors';
 import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
 import { CURRENT_LOCATION } from '../data/places';
+import { Button, RoundButton, SegmentedControl } from '../components/ui';
 
-const MAP_PAD = { top: 50, bottom: 50 };
+const MODES = [
+  { key: 'Bus', label: 'Bus', icon: 'bus' },
+  { key: 'Taxi', label: 'Taxi', icon: 'car' },
+  { key: 'Train', label: 'Train', icon: 'train' },
+];
 
 export default function LiveMapScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [transportType, setTransportType] = useState('Bus');
   const [plan, setPlan] = useState({ origin: CURRENT_LOCATION, destination: null });
   const [error, setError] = useState(null);
+  const [sheetH, setSheetH] = useState(330);
   const planner = useRef(null);
+  const mapPad = useMemo(() => ({ top: insets.top + 80, bottom: sheetH + 30 }), [insets.top, sheetH]);
+
   const find = () => {
     const resolved = planner.current ? planner.current.resolve() : plan;
     const err = validatePlan(resolved);
     setError(err);
-    if (!err) navigation.navigate('LiveMapResult', { origin: resolved.origin, destination: resolved.destination });
+    if (!err) navigation.navigate('LiveMapResult', { mode: transportType, origin: resolved.origin, destination: resolved.destination });
   };
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView style={{ flex: 1 }} behavior="padding">
-      <View style={styles.topBar}>
-        <View style={styles.titleRow}>
-          <Ionicons name="navigate-circle" size={22} color={colors.primary800} />
+    <View style={styles.root}>
+      <View style={StyleSheet.absoluteFill}>
+        <RealMap origin={plan.origin} destination={plan.destination} padding={mapPad} vehicle={transportType} fallback={<RouteMap />} />
+      </View>
+
+      <View style={[styles.floatBar, { top: insets.top + 10 }]} pointerEvents="box-none">
+        <View style={[styles.titlePill, shadow.card]}>
+          <Ionicons name="navigate-circle" size={20} color={colors.primary800} />
           <Text style={styles.title}>Live Map</Text>
         </View>
-        <Ionicons name="notifications-outline" size={20} color={colors.black} />
+        <RoundButton icon="notifications-outline" onPress={() => navigation.navigate('Notification')} />
       </View>
 
-      <View style={styles.mapWrap}>
-        <RealMap
-          origin={plan.origin}
-          destination={plan.destination}
-          padding={MAP_PAD}
-          fallback={<RouteMap />}
-        />
-      </View>
-
-      <View style={styles.sheet}>
-        <View style={styles.grabber} />
-
-        <LocationPlanner ref={planner} value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <TouchableOpacity style={styles.transportCard}>
-          <View style={styles.transportLeft}>
-            <Ionicons name="bus" size={20} color={colors.black} />
-            <Text style={styles.transportText}>Type of Transport: {transportType}</Text>
-          </View>
-          <Ionicons name="chevron-down" size={16} color={colors.black} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.findButton}
-          onPress={find}
-        >
-          <Ionicons name="search" size={18} color={colors.white} />
-          <Text style={styles.findButtonText}>Find Transport to track</Text>
-        </TouchableOpacity>
-      </View>
+      <KeyboardAvoidingView behavior="padding" style={styles.kav} pointerEvents="box-none">
+        <View style={[styles.sheet, shadow.float]} onLayout={(e) => setSheetH(e.nativeEvent.layout.height)}>
+          <View style={styles.grabber} />
+          <Text style={styles.sheetTitle}>Track a vehicle</Text>
+          <LocationPlanner ref={planner} value={plan} onChange={(v) => { setPlan(v); setError(null); }} />
+          {error ? (
+            <View style={styles.errorRow}>
+              <Ionicons name="alert-circle" size={16} color={colors.red500} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+          <SegmentedControl options={MODES} value={transportType} onChange={setTransportType} />
+          <Button title="Find transport to track" icon="search" onPress={find} />
+        </View>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.white },
-  topBar: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 25,
-    backgroundColor: colors.white,
-  },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  title: { ...typography.s1, color: colors.black },
-  mapWrap: { flex: 1 },
-  sheet: {
-    backgroundColor: colors.primary50,
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    marginTop: -25,
-    padding: 25,
-    gap: 20,
-  },
-  grabber: { width: 35, height: 4, backgroundColor: colors.grey300, borderRadius: 4, alignSelf: 'center' },
-  plannerCard: {
-    backgroundColor: colors.white,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 25,
-    gap: 15,
-    shadowColor: colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 2,
-  },
-  plannerIcons: { alignItems: 'center', width: 15 },
-  dotOutline: { width: 10, height: 10, borderRadius: 5, borderWidth: 2, borderColor: colors.primary800 },
-  dottedLine: { width: 1, height: 30, borderLeftWidth: 1, borderLeftColor: colors.grey300, borderStyle: 'dashed', marginVertical: 4 },
-  plannerInputs: { flex: 1 },
-  inputRow: { borderBottomWidth: 1, borderBottomColor: colors.grey300, paddingVertical: 16 },
-  inputRowLast: { paddingVertical: 16 },
-  inputTextActive: { ...typography.b1, color: colors.primary800 },
-  inputText: { ...typography.b1, color: colors.black },
-  errorText: { ...typography.b3, color: colors.red500, marginTop: -10 },
-  transportCard: {
-    backgroundColor: colors.white,
-    borderRadius: 10,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 25,
-    shadowColor: colors.black,
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 10 },
-    elevation: 2,
-  },
-  transportLeft: { flexDirection: 'row', alignItems: 'center', gap: 15 },
-  transportText: { ...typography.b3, color: colors.black },
-  findButton: {
-    backgroundColor: colors.primary800,
-    borderRadius: 40,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 15,
-    paddingVertical: 20,
-  },
-  findButtonText: { ...typography.s2, color: colors.white },
+  root: { flex: 1, backgroundColor: colors.bg },
+  floatBar: { position: 'absolute', left: 16, right: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  titlePill: { flexDirection: 'row', alignItems: 'center', gap: 8, height: 46, paddingHorizontal: 16, backgroundColor: colors.white, borderRadius: 23 },
+  title: { ...typography.s2, color: colors.ink },
+  kav: { flex: 1, justifyContent: 'flex-end' },
+  sheet: { backgroundColor: colors.white, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, paddingHorizontal: 20, paddingTop: 10, paddingBottom: 18, gap: 12 },
+  grabber: { width: 40, height: 4, borderRadius: 2, backgroundColor: colors.grey300, alignSelf: 'center' },
+  sheetTitle: { ...typography.h5, color: colors.ink },
+  errorRow: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: colors.redSoft, borderRadius: radius.md, padding: 10 },
+  errorText: { ...typography.b3, color: colors.red500, flex: 1 },
 });

@@ -30,6 +30,8 @@ export const PLACES = [
   { id: 'ethiopia-sq', name: 'Africa Avenue', area: 'Bole', lat: 9.0023, lng: 38.7740, kind: 'street' },
   { id: 'unity-park', name: 'Unity Park', area: 'Arada', lat: 9.0310, lng: 38.7580, kind: 'landmark' },
   { id: 'sar-bet', name: 'Sar Bet', area: 'Nifas Silk-Lafto', lat: 8.9889, lng: 38.7353, kind: 'area' },
+  { id: 'aau', name: 'AAU', area: 'Arada', lat: 9.0412, lng: 38.7633, kind: 'landmark' },
+  { id: 'kirkos', name: 'Kirkos', area: 'Kirkos', lat: 9.0105, lng: 38.7667, kind: 'area' },
   { id: 'kebena', name: 'Kebena', area: 'Kolfe Keranio', lat: 9.0453, lng: 38.7470, kind: 'area' },
 ];
 
@@ -68,3 +70,10 @@ export function findExact(text) {
 }
 
 export const getPlace = (id) => PLACES.find((p) => p.id === id) || null;
+
+/** Turn a "From → To" label into {origin, destination} places (best match, may be null). */
+export function routeToPlan(label) {
+  const [a, b] = String(label).split(/→|->/).map((x) => x.trim());
+  const pick = (t) => findExact(t) || searchPlaces(t)[0] || null;
+  return { origin: pick(a), destination: pick(b) };
+}

@@ -6,14 +6,14 @@ import { colors } from '../theme/colors';
 // Web version (used by `expo start --web` and for automated screenshots): same HTML in an iframe.
 const slim = (p) => (p && p.lat != null ? { id: p.id, name: p.name, lat: p.lat, lng: p.lng } : null);
 
-export default function RealMap({ origin, destination, progress, buses, onTrack, padding, interactive = true, height }) {
+export default function RealMap({ origin, destination, progress, buses, onTrack, padding, interactive = true, height, vehicle = 'Bus' }) {
   const frame = useRef(null);
   const [ready, setReady] = useState(false);
   const onTrackRef = useRef(onTrack);
   onTrackRef.current = onTrack;
   const state = useMemo(
-    () => ({ origin: slim(origin), destination: slim(destination), progress, buses, padding, interactive }),
-    [origin, destination, progress, buses, padding, interactive],
+    () => ({ origin: slim(origin), destination: slim(destination), progress, buses, padding, interactive, vehicle }),
+    [origin, destination, progress, buses, padding, interactive, vehicle],
   );
 
   useEffect(() => {

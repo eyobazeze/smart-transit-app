@@ -7,8 +7,8 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, gradients, radius, shadow } from '../theme/colors';
 import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
-import { CURRENT_LOCATION, PLACES, getPlace } from '../data/places';
-import { PressableScale, Button, Card, Chip } from '../components/ui';
+import { CURRENT_LOCATION, getPlace, routeToPlan } from '../data/places';
+import { PressableScale, Button, Card, Chip, TripCard } from '../components/ui';
 
 const RECENT_TRIPS = [
   { id: '1', route: 'Bole → Piassa', distance: '7.2 km', time: '18 mins', cost: '35 ETB', icon: 'car', mode: 'Taxi' },
@@ -48,12 +48,6 @@ export default function HomeScreen({ navigation }) {
     const err = validatePlan(resolved);
     setError(err);
     if (!err) navigation.navigate('TripResult', { mode, origin: resolved.origin, destination: resolved.destination });
-  };
-
-  const recentPlan = (r) => {
-    const find = (n) => PLACES.find((p) => p.name.toLowerCase() === n.toLowerCase().trim());
-    const [a, b] = r.route.split('→');
-    return { origin: find(a), destination: find(b) };
   };
 
   return (
@@ -125,35 +119,17 @@ export default function HomeScreen({ navigation }) {
           <View>
             <Text style={styles.sectionTitle}>Recent trips</Text>
             <View style={{ gap: 12 }}>
-              {RECENT_TRIPS.map((trip) => {
-                const [from, to] = trip.route.split('→').map((x) => x.trim());
-                return (
-                  <PressableScale
-                    key={trip.id}
-                    onPress={() => navigation.navigate('TripResult', { mode: trip.mode, ...recentPlan(trip) })}
-                    style={[styles.recent, shadow.card]}
-                  >
-                    <View style={styles.recentIcon}>
-                      <Ionicons name={trip.icon === 'bus' ? 'bus' : 'car'} size={20} color={colors.primary800} />
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.recentRoute} numberOfLines={1}>{from}</Text>
-                      <View style={styles.toRow}>
-                        <Ionicons name="arrow-forward" size={12} color={colors.grey400} />
-                        <Text style={styles.recentTo} numberOfLines={1}>{to}</Text>
-                      </View>
-                      <View style={styles.stats}>
-                        <Text style={styles.stat}>{trip.distance}</Text>
-                        <View style={styles.dot} />
-                        <Text style={styles.stat}>{trip.time}</Text>
-                        <View style={styles.dot} />
-                        <Text style={styles.stat}>{trip.cost}</Text>
-                      </View>
-                    </View>
-                    <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
-                  </PressableScale>
-                );
-              })}
+              {RECENT_TRIPS.map((trip) => (
+                <TripCard
+                  key={trip.id}
+                  route={trip.route}
+                  distance={trip.distance}
+                  time={trip.time}
+                  extra={trip.cost}
+                  mode={trip.mode}
+                  onPress={() => navigation.navigate('TripResult', { mode: trip.mode, ...routeToPlan(trip.route) })}
+                />
+              ))}
             </View>
           </View>
         </View>

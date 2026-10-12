@@ -35,11 +35,16 @@ const SCRIPT = `
   var routeKey = '', padKey = '', reqId = 0;
   var state = {};
 
-  var busSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff"><path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM6 11V6h12v5H6z"/></svg>';
+  var SVGS = {
+    Bus: '<path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1h8v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zm9 0a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3zM6 11V6h12v5H6z"/>',
+    Taxi: '<path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/>',
+    Train: '<path d="M4 15.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h2.23l2-2H14l2 2h2v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V5c0-3.5-3.58-4-8-4s-8 .5-8 4v10.5zm8 1.5c-.83 0-1.5-.67-1.5-1.5S11.17 14 12 14s1.5.67 1.5 1.5S12.83 17 12 17zm6-7H6V5h12v5z"/>'
+  };
   function busIcon(active) {
+    var svg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="#fff">' + (SVGS[state.vehicle] || SVGS.Bus) + '</svg>';
     return L.divIcon({
       className: '',
-      html: '<div style="box-sizing:border-box;width:38px;height:38px;border-radius:19px;background:' + BLUE + ';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;' + (active ? 'transform:scale(1.12);' : '') + '">' + busSvg + '</div>',
+      html: '<div style="box-sizing:border-box;width:38px;height:38px;border-radius:19px;background:' + BLUE + ';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;' + (active ? 'transform:scale(1.12);' : '') + '">' + svg + '</div>',
       iconSize: [38, 38], iconAnchor: [19, 19]
     });
   }
@@ -111,7 +116,8 @@ const SCRIPT = `
     }
     var at = pointAt(p);
     if (!vehicle) vehicle = L.marker(at, { icon: busIcon(false), interactive: false, zIndexOffset: 1000 }).addTo(map);
-    else vehicle.setLatLng(at);
+    else { vehicle.setLatLng(at); if (vehicle.__v !== state.vehicle) vehicle.setIcon(busIcon(false)); }
+    vehicle.__v = state.vehicle;
   }
 
   function updateBuses() {

@@ -21,7 +21,7 @@ const slim = (p) => (p && p.lat != null ? { id: p.id, name: p.name, lat: p.lat, 
  *  fallback             element shown if the map cannot load (e.g. offline)
  */
 export default function RealMap({
-  origin, destination, progress, buses, onTrack, padding, interactive = true, height, fallback = null,
+  origin, destination, progress, buses, onTrack, padding, interactive = true, height, fallback = null, vehicle = 'Bus',
 }) {
   const ref = useRef(null);
   const [ready, setReady] = useState(false);
@@ -30,8 +30,8 @@ export default function RealMap({
   onTrackRef.current = onTrack;
 
   const stateJson = useMemo(
-    () => JSON.stringify({ origin: slim(origin), destination: slim(destination), progress, buses, padding, interactive }),
-    [origin, destination, progress, buses, padding, interactive],
+    () => JSON.stringify({ origin: slim(origin), destination: slim(destination), progress, buses, padding, interactive, vehicle }),
+    [origin, destination, progress, buses, padding, interactive, vehicle],
   );
 
   useEffect(() => {
