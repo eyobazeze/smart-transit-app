@@ -3,6 +3,7 @@ import { View, Text, TextInput, StyleSheet, TouchableOpacity, Platform } from 'r
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { colors, typography, radius, shadow } from '../theme/colors';
 import { CURRENT_LOCATION, searchPlaces, findExact } from '../data/places';
+import { useLocationStatus } from '../data/location';
 
 const KIND_ICON = {
   current: 'navigate', airport: 'airplane', market: 'storefront', station: 'bus',
@@ -14,6 +15,7 @@ const KIND_ICON = {
  * value: { origin: Place|null, destination: Place|null }
  */
 const LocationPlanner = forwardRef(function LocationPlanner({ value, onChange, style }, ref) {
+  useLocationStatus();
   const [active, setActive] = useState(null); // 'origin' | 'destination' | null
   const [text, setText] = useState({
     origin: value.origin ? value.origin.name : '',
@@ -130,7 +132,7 @@ const LocationPlanner = forwardRef(function LocationPlanner({ value, onChange, s
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.itemName}>Use my current location</Text>
-                <Text style={styles.itemArea}>GPS</Text>
+                <Text style={styles.itemArea}>{CURRENT_LOCATION.area}</Text>
               </View>
             </TouchableOpacity>
           ) : null}

@@ -4,10 +4,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, gradients, radius, shadow } from '../theme/colors';
 import { getUser } from '../data/session';
+import { useTripStore, statsFromHistory } from '../data/tripStore';
 import { StackHeader, Button, SettingsGroup, SettingsRow } from '../components/ui';
 
 export default function ProfileScreen({ navigation }) {
   const user = getUser();
+  const { history, saved } = useTripStore();
+  const stats = statsFromHistory(history);
   const [location, setLocation] = useState(true);
   const [pushNotifications, setPushNotifications] = useState(false);
 
@@ -20,11 +23,11 @@ export default function ProfileScreen({ navigation }) {
           <Text style={styles.name}>{user.name}</Text>
           <Text style={styles.email}>{user.email}</Text>
           <View style={styles.stats}>
-            <View style={styles.stat}><Text style={styles.statValue}>24</Text><Text style={styles.statLabel}>Trips</Text></View>
+            <View style={styles.stat}><Text style={styles.statValue}>{stats.trips}</Text><Text style={styles.statLabel}>Trips</Text></View>
             <View style={styles.statDivider} />
-            <View style={styles.stat}><Text style={styles.statValue}>168 km</Text><Text style={styles.statLabel}>Travelled</Text></View>
+            <View style={styles.stat}><Text style={styles.statValue}>{stats.km} km</Text><Text style={styles.statLabel}>Travelled</Text></View>
             <View style={styles.statDivider} />
-            <View style={styles.stat}><Text style={styles.statValue}>4</Text><Text style={styles.statLabel}>Saved</Text></View>
+            <View style={styles.stat}><Text style={styles.statValue}>{saved.length}</Text><Text style={styles.statLabel}>Saved</Text></View>
           </View>
         </LinearGradient>
 

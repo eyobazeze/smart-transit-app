@@ -8,6 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { colors, typography, gradients, radius, shadow } from '../theme/colors';
 import LocationPlanner, { validatePlan } from '../components/LocationPlanner';
 import { CURRENT_LOCATION, getPlace, routeToPlan } from '../data/places';
+import { initLocation } from '../data/location';
+import { useTripStore, planFromItem, timeAgo } from '../data/tripStore';
 import { PressableScale, Button, Card, Chip, TripCard } from '../components/ui';
 
 const RECENT_TRIPS = [
@@ -42,6 +44,8 @@ export default function HomeScreen({ navigation }) {
   const [mode, setMode] = useState('Bus');
   const [error, setError] = useState(null);
   const planner = useRef(null);
+  const { history } = useTripStore();
+  React.useEffect(() => { initLocation(); }, []);
 
   const go = () => {
     const resolved = planner.current ? planner.current.resolve() : plan;
@@ -117,9 +121,20 @@ export default function HomeScreen({ navigation }) {
           </View>
 
           <View>
-            <Text style={styles.sectionTitle}>Recent trips</Text>
+            <Text style={styles.sectionTitle}>{history.length ? 'Recent trips' : 'Suggested routes'}</Text>
             <View style={{ gap: 12 }}>
-              {RECENT_TRIPS.map((trip) => (
+              {history.slice(0, 3).map((t) => (
+                <TripCard
+                  key={t.id}
+                  route={t.route}
+                  distance={`${t.km} km`}
+                  time={`${t.minutes} mins`}
+                  extra={timeAgo(t.ts)}
+                  mode={t.mode}
+                  onPress={() => navigation.navigate('TripResult', planFromItem(t))}
+                />
+              ))}
+              {!history.length && RECENT_TRIPS.map((trip) => (
                 <TripCard
                   key={trip.id}
                   route={trip.route}

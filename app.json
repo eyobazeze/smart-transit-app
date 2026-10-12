@@ -23,7 +23,13 @@
       "bundler": "metro"
     },
     "plugins": [
-      "expo-status-bar"
+      "expo-status-bar",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Smart Transit uses your location to plan trips from where you are."
+        }
+      ]
     ]
   }
 }

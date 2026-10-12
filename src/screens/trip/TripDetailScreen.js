@@ -8,6 +8,7 @@ import { getPlace } from '../../data/places';
 import { colors, typography, radius, shadow } from '../../theme/colors';
 import { getTrip } from '../../data/tripData';
 import { PressableScale, Button, RoundButton, Chip } from '../../components/ui';
+import { toggleSaved, isSaved, useTripStore } from '../../data/tripStore';
 
 const MODES = [
   { key: 'Bus', icon: 'bus' },
@@ -25,6 +26,8 @@ export default function TripDetailScreen({ route, navigation }) {
   const destination = route.params?.destination || getPlace('piassa');
   const trip = getTrip(mode, route.params?.origin, route.params?.destination);
   const option = activeOption && trip.tripOptions.includes(activeOption) ? activeOption : trip.tripOptions[0];
+  useTripStore();
+  const saved = isSaved(mode, origin, destination);
   const mapPad = React.useMemo(() => ({ top: insets.top + 70, bottom: 50 }), [insets.top]);
 
   return (
@@ -40,7 +43,7 @@ export default function TripDetailScreen({ route, navigation }) {
         <View style={[styles.floatBar, { top: insets.top + 10 }]} pointerEvents="box-none">
           <RoundButton icon="arrow-back" onPress={() => navigation.goBack()} />
           <Text style={styles.barTitle}>Trip details</Text>
-          <View style={{ width: 46 }} />
+          <RoundButton icon={saved ? 'bookmark' : 'bookmark-outline'} color={saved ? colors.primary800 : colors.ink} onPress={() => toggleSaved({ mode, origin, destination, distance: trip.distance, duration: trip.duration })} />
         </View>
       </View>
 

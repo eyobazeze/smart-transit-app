@@ -132,7 +132,7 @@ export function StackHeader({ title, onBack, right }) {
 }
 
 /** Reusable trip card (Home recents, My Trips). */
-export function TripCard({ route: label, distance, time, extra, mode, onPress }) {
+export function TripCard({ route: label, distance, time, extra, mode, onPress, onAction, actionIcon = 'close' }) {
   const [from, to] = String(label).split(/→|->/).map((x) => x.trim());
   const icon = mode === 'Bus' ? 'bus' : mode === 'Train' ? 'train' : 'car';
   return (
@@ -150,8 +150,26 @@ export function TripCard({ route: label, distance, time, extra, mode, onPress })
           {extra ? (<><View style={styles.tripDot} /><Text style={styles.tripStat}>{extra}</Text></>) : null}
         </View>
       </View>
-      <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
+      {onAction ? (
+        <PressableScale onPress={onAction} style={styles.tripAction} haptic scaleTo={0.9}>
+          <Ionicons name={actionIcon} size={16} color={colors.grey600} />
+        </PressableScale>
+      ) : (
+        <Ionicons name="chevron-forward" size={18} color={colors.grey400} />
+      )}
     </PressableScale>
+  );
+}
+
+/** Friendly empty list placeholder. */
+export function EmptyState({ icon = 'time-outline', title, text, actionTitle, onAction }) {
+  return (
+    <View style={styles.empty}>
+      <View style={styles.emptyIcon}><Ionicons name={icon} size={30} color={colors.primary800} /></View>
+      <Text style={styles.emptyTitle}>{title}</Text>
+      <Text style={styles.emptyText}>{text}</Text>
+      {actionTitle ? <Button title={actionTitle} onPress={onAction} compact style={{ marginTop: 6 }} /> : null}
+    </View>
   );
 }
 
@@ -204,6 +222,11 @@ export function SegmentedControl({ options, value, onChange }) {
 }
 
 Object.assign(styles, StyleSheet.create({
+  tripAction: { width: 34, height: 34, borderRadius: 17, backgroundColor: colors.bg, alignItems: 'center', justifyContent: 'center' },
+  empty: { alignItems: 'center', paddingVertical: 40, paddingHorizontal: 24, gap: 8 },
+  emptyIcon: { width: 68, height: 68, borderRadius: 34, backgroundColor: colors.primary100, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+  emptyTitle: { ...typography.h5, color: colors.ink, textAlign: 'center' },
+  emptyText: { ...typography.b3, color: colors.grey600, textAlign: 'center' },
   tabHeader: { paddingHorizontal: 22, borderBottomLeftRadius: 32, borderBottomRightRadius: 32 },
   tabHeaderRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   tabHeaderIcon: { width: 42, height: 42, borderRadius: 21, backgroundColor: 'rgba(255,255,255,0.2)', alignItems: 'center', justifyContent: 'center' },

@@ -9,6 +9,7 @@ import { getPlace } from '../../data/places';
 import { colors, typography, gradients, radius, shadow } from '../../theme/colors';
 import { Button, PressableScale } from '../../components/ui';
 import { getTrip } from '../../data/tripData';
+import { recordTrip } from '../../data/tripStore';
 import { PLACES } from '../../data/places';
 
 // Demo pace: each stage lasts this many real seconds (the screen still shows real trip minutes).
@@ -102,7 +103,15 @@ export default function TripLiveScreen({ route, navigation }) {
   const stepIndex = { walk: 0, wait: isTaxi ? 1 : 1, prompt: 2, ride: 2, arrived: 3 }[stage];
   const goHome = () => navigation.navigate('Main', { screen: 'Home' });
   const cancel = () => confirm('Cancel this trip?', 'Your progress will be lost.', goHome);
-  const endEarly = () => confirm('End trip now?', 'You have not reached the destination yet.', () => { setStage('arrived'); setP(0); });
+  const endedEarly = useRef(false);
+  const recorded = useRef(false);
+  useEffect(() => {
+    if (stage === 'arrived' && !tracking && !endedEarly.current && !recorded.current) {
+      recorded.current = true;
+      recordTrip({ mode: trip.mode, origin, destination, distance: trip.distance, duration: trip.duration, cost: trip.cost });
+    }
+  }, [stage, tracking, trip, origin, destination]);
+  const endEarly = () => confirm('End trip now?', 'You have not reached the destination yet.', () => { endedEarly.current = true; setStage('arrived'); setP(0); });
 
   return (
     <View style={styles.root}>

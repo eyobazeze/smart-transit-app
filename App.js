@@ -23,10 +23,12 @@ import LiveMapResultScreen from './src/screens/LiveMapResultScreen';
 import NotificationScreen from './src/screens/NotificationScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
 import { colors } from './src/theme/colors';
+import { hydrateTrips } from './src/data/tripStore';
 
 // Keep the native splash up until Inter has loaded, so text never flashes
 // in the system font.
 ExpoSplash.preventAutoHideAsync().catch(() => {});
+hydrateTrips();
 
 const Stack = createNativeStackNavigator();
 
