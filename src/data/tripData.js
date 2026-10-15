@@ -6,7 +6,7 @@ export const busTrip = {
   endStation: 'Shola Market',
   distance: '5.1 km',
   duration: '28 mins',
-  cost: '10 ETB',
+  cost: '15 ETB',
   leaveTime: '12:00 PM',
   arriveTime: '12:28 PM',
   steps: [
@@ -26,7 +26,7 @@ export const taxiTrip = {
   endStation: 'Piassa',
   distance: '7.2 km',
   duration: '18 mins',
-  cost: '150 ETB',
+  cost: '45 ETB',
   leaveTime: '12:00 PM',
   arriveTime: '12:18 PM',
   steps: [
@@ -46,7 +46,7 @@ export const trainTrip = {
   endStation: 'Ayat Station',
   distance: '6.4 km',
   duration: '15 mins',
-  cost: '6 ETB',
+  cost: '20 ETB',
   leaveTime: '12:00 PM',
   arriveTime: '12:15 PM',
   steps: [
@@ -65,8 +65,17 @@ export const tripsByMode = {
 };
 
 const SPEED_KMH = { Bus: 16, Taxi: 28, Train: 32 };
-const PER_KM = { Bus: 1, Taxi: 22, Train: 0.7 };
-const MIN_FARE = { Bus: 5, Taxi: 60, Train: 3 };
+// Fares: a minimum fare covers the first stretch, then +5 ETB for every further stretch.
+const FARE_RULES = {
+  Bus: { min: 15, coveredKm: 6, stepKm: 4 },
+  Taxi: { min: 15, coveredKm: 1, stepKm: 1 },
+  Train: { min: 20, coveredKm: 8, stepKm: 5 },
+};
+export function fareFor(mode, distKm) {
+  const r = FARE_RULES[mode] || FARE_RULES.Bus;
+  const steps = Math.max(0, Math.floor((distKm - r.coveredKm) / r.stepKm));
+  return r.min + 5 * steps;
+}
 
 function km(a, b) {
   const R = 6371, rad = (d) => (d * Math.PI) / 180;
@@ -94,7 +103,7 @@ export function getTrip(mode, origin, destination) {
   const wait = m === 'Taxi' ? 2 : m === 'Train' ? 5 : 7;
   const ride = Math.max(4, Math.round((dist / SPEED_KMH[m]) * 60));
   const total = walk + wait + ride;
-  const cost = Math.round(Math.max(MIN_FARE[m], dist * PER_KM[m]) / (m === 'Taxi' ? 5 : 1)) * (m === 'Taxi' ? 5 : 1);
+  const cost = fareFor(m, dist);
   const now = new Date();
   const from = origin.id === 'current' ? 'your location' : origin.name;
   const startName = origin.id === 'current' ? 'Your location' : origin.name;
