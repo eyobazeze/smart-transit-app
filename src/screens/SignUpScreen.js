@@ -28,7 +28,7 @@ export default function SignUpScreen({ navigation }) {
   return (
     <AuthLayout
       title="Create account"
-      subtitle="Join to plan, track and ride smarter."
+      subtitle="Join to plan, track, and ride smarter."
       footer={
         <>
           <SocialRow />
